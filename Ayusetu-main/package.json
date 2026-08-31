@@ -1,0 +1,28 @@
+{
+  "name": "academia-industry-portal",
+  "version": "1.0.0",
+  "description": "Academia-Industry Collaboration Portal - Smart India Hackathon 2024",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "ai-service",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:ai": "cd ai-service && python -m uvicorn main:app --reload --port 8000",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "test:backend": "npm run test --workspace=backend",
+    "test:ai": "cd ai-service && pytest",
+    "test:frontend": "npm run test --workspace=frontend",
+    "lint:backend": "npm run lint --workspace=backend",
+    "lint:frontend": "npm run lint --workspace=frontend",
+    "format": "npm run format --workspaces"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "author": "SIH Team",
+  "license": "MIT"
+}
