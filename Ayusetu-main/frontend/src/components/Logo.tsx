@@ -4,21 +4,17 @@ export function Logo({ compact = false, light = false }: { compact?: boolean; li
   return (
     <div className="flex items-center gap-2.5">
       <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden>
-        <rect width="36" height="36" rx="10" fill={light ? '#0F2F27' : '#143D32'} />
-        <path
-          d="M18 7c.45 3.6 2.9 6.7 7 8.3-4.1 1.6-6.55 4.7-7 8.3-.45-3.6-2.9-6.7-7-8.3C15.1 13.7 17.55 10.6 18 7Z"
-          fill="#E8B86D"
-        />
-        <circle cx="18" cy="15.4" r="2.4" fill="#F7F1E8" />
+        <rect width="36" height="36" rx="10" fill={light ? '#ffffff' : '#1d4e89'} />
+        <path d="M9 25V13h2.8v12H9Zm15.2 0V13H27v12h-2.8Z" fill={light ? '#1d4e89' : '#fff'} />
+        <path d="M9 15.2h18" stroke={light ? '#1d4e89' : '#fff'} strokeWidth="1.8" strokeLinecap="round" />
+        <circle cx="18" cy="15.2" r="2.1" fill={light ? '#1d4e89' : '#e7ebf1'} />
       </svg>
       <div className={compact ? 'hidden sm:block' : ''}>
-        <p className={`font-serif text-lg font-semibold leading-none ${light ? 'text-cream-50' : 'text-forest-800'}`}>
+        <p className={`text-[1.15rem] font-bold leading-none tracking-tight ${light ? 'text-white' : 'text-forest-800'}`}>
           AyuSetu
         </p>
         {!compact && (
-          <p className={`mt-0.5 text-[10px] font-medium uppercase tracking-[0.14em] ${light ? 'text-saffron-300' : 'text-saffron-600'}`}>
-            AYUSH skill bridge
-          </p>
+          <p className={`mt-0.5 text-[10px] font-medium ${light ? 'text-white/70' : 'text-ink-500'}`}>AYUSH skill bridge</p>
         )}
       </div>
     </div>

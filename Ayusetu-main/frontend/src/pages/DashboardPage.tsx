@@ -27,7 +27,7 @@ function StudentDash({ name }: { name: string }) {
       />
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="card relative overflow-hidden p-6 lg:row-span-1">
-          <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-saffron-200/50 blur-2xl" />
+          <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-forest-100" />
           <ReadinessRing value={84} />
           <p className="mt-2 text-center text-xs text-ink-500">Weighted clinical + documentation score</p>
         </div>
@@ -51,7 +51,7 @@ function StudentDash({ name }: { name: string }) {
               <Link
                 key={o._id}
                 to="/opportunities"
-                className="block rounded-xl border border-stone-100 bg-cream-50/50 p-4 transition hover:-translate-y-0.5 hover:border-forest-200 hover:bg-white hover:shadow-md"
+                className="block rounded-xl border border-slate-100 bg-cream-100 p-4 transition hover:border-forest-200 hover:bg-white"
               >
                 <p className="font-medium text-ink-900">{o.title}</p>
                 <p className="text-xs text-ink-500">

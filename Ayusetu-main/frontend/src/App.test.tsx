@@ -11,9 +11,8 @@ describe('App', () => {
   it('renders role entry cards', () => {
     render(<App />);
     expect(screen.getByText('Student')).toBeInTheDocument();
-    expect(screen.getByText('Industry')).toBeInTheDocument();
-    expect(screen.getByText('Institution')).toBeInTheDocument();
-    expect(screen.getByText('Ministry')).toBeInTheDocument();
+    expect(screen.getByText('Institute')).toBeInTheDocument();
+    expect(screen.getByText('Ministry of AYUSH')).toBeInTheDocument();
   });
 
   it('renders the idea subtitle', () => {

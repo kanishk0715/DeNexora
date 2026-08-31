@@ -3,11 +3,8 @@
 @tailwind utilities;
 
 :root {
-  color: #1c1917;
-  background: #f4eee4;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
+  color: #0f172a;
+  background: #f4f6f9;
 }
 
 * {
@@ -18,11 +15,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  background:
-    radial-gradient(1200px 500px at 10% -10%, rgba(232, 184, 109, 0.28), transparent 55%),
-    radial-gradient(900px 420px at 100% 0%, rgba(20, 61, 50, 0.12), transparent 50%),
-    #f4eee4;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: #f4f6f9;
 }
 
 #root {
@@ -31,60 +25,30 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-forest-600 to-forest-800 px-4 py-2.5 text-sm font-semibold text-cream-50 shadow-md transition duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-forest-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-forest-700 disabled:opacity-50;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-forest-200/80 bg-white/80 px-4 py-2.5 text-sm font-semibold text-forest-800 shadow-sm backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:border-forest-400 hover:bg-white;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-forest-800 transition hover:border-forest-200 hover:bg-forest-50;
   }
   .input {
-    @apply w-full rounded-xl border border-stone-300/80 bg-white/90 px-3 py-2.5 text-sm text-ink-900 placeholder:text-stone-400 shadow-sm transition focus:border-forest-500 focus:outline-none focus:ring-4 focus:ring-forest-500/15;
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-ink-900 placeholder:text-slate-400 transition focus:border-forest-500 focus:outline-none focus:ring-4 focus:ring-forest-500/10;
   }
   .card {
-    @apply rounded-2xl border border-white/60 bg-white/80 shadow-card backdrop-blur-sm;
+    @apply rounded-2xl border border-slate-200/80 bg-white shadow-card;
   }
   .card-hover {
-    @apply card transition duration-300 hover:-translate-y-1 hover:border-forest-200;
+    @apply card transition duration-200 hover:-translate-y-0.5 hover:border-forest-200;
   }
-  .card-hover:hover {
-    box-shadow: 0 18px 40px rgba(20, 61, 50, 0.14);
-  }
-  .shadow-lift {
-    box-shadow: 0 18px 40px rgba(20, 61, 50, 0.14);
-  }
-}
-
-.mesh-hero {
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(232, 184, 109, 0.35), transparent),
-    radial-gradient(ellipse 60% 50% at 90% 10%, rgba(45, 106, 79, 0.22), transparent),
-    linear-gradient(180deg, rgba(253, 251, 247, 0.4), transparent);
-}
-
-@keyframes barFill {
-  from { width: 0; }
-}
-
-@keyframes pulse-ring {
-  0%, 100% { transform: scale(1); opacity: 0.55; }
-  50% { transform: scale(1.08); opacity: 0.2; }
-}
-
-@keyframes float-y {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-.animate-bar {
-  animation: barFill 0.9s ease-out forwards;
-}
-
-.animate-float {
-  animation: float-y 5s ease-in-out infinite;
 }
 
 .progress-line {
   height: 6px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #16553d, #e8b86d);
+  background: #1d4e89;
   transition: width 0.45s ease;
+}
+
+.ledger-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
