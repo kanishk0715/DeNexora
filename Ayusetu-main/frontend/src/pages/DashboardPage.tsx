@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { PageHeader, StatCard, MatchBar, StatusBadge } from '../components/ui/Primitives';
 import { ReadinessRing } from '../components/ui/ReadinessRing';
 import { DEMO_APPLICATIONS, DEMO_OPPORTUNITIES, DEMO_SKILLS, SKILL_DEMAND, STATE_PLACEMENTS } from '../data/demo';
+import { StatePulseGrid } from '../components/ministry/StatePulseGrid';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 export default function DashboardPage() {
@@ -130,7 +131,7 @@ function IndustryDash() {
             <XAxis dataKey="stage" tick={{ fontSize: 12 }} />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="n" fill="#143d32" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="n" fill="#16553d" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -160,7 +161,7 @@ function InstitutionDash() {
             <YAxis />
             <Tooltip />
             <Bar dataKey="demand" fill="#c45c26" name="Industry demand" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="supply" fill="#143d32" name="Graduate supply" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="supply" fill="#16553d" name="Graduate supply" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -174,7 +175,7 @@ function MinistryDash() {
       <PageHeader
         kicker="Ministry of AYUSH"
         title="National skill-bridge snapshot"
-        subtitle="Centralised, real-time placement data across streams and states."
+        subtitle="State-wise internships and jobs — centralised placement pulse across AYUSH streams."
       />
       <div className="grid gap-4 sm:grid-cols-4">
         <StatCard label="Institutes onboarded" value="186" />
@@ -182,16 +183,19 @@ function MinistryDash() {
         <StatCard label="Students mapped" value="48.2k" />
         <StatCard label="Offers confirmed" value="6,410" />
       </div>
+      <div className="mt-6">
+        <StatePulseGrid />
+      </div>
       <div className="card mt-6 p-5">
-        <h2 className="mb-4 font-semibold text-forest-900">Internships vs jobs by state</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={STATE_PLACEMENTS}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
+        <h2 className="mb-4 font-semibold text-forest-900">Internships vs jobs (sample states)</h2>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={STATE_PLACEMENTS.slice(0, 8)}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0e6d8" />
             <XAxis dataKey="state" tick={{ fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={70} />
             <YAxis />
             <Tooltip />
             <Bar dataKey="internships" fill="#16553d" name="Internships" />
-            <Bar dataKey="jobs" fill="#e8b86d" name="Jobs" />
+            <Bar dataKey="jobs" fill="#c45c26" name="Jobs" />
           </BarChart>
         </ResponsiveContainer>
       </div>

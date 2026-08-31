@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppShell from './components/layout/AppShell';
@@ -20,31 +20,29 @@ import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminVerificationsPage from './pages/admin/AdminVerificationsPage';
 import FacultyHubPage from './pages/faculty/FacultyHubPage';
 import PublicPortfolioPage from './pages/PublicPortfolioPage';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import AboutPage from './pages/AboutPage';
+import { LocaleProvider } from './contexts/LocaleContext';
+import { ToastProvider } from './contexts/ToastContext';
+import { CommandPalette } from './components/CommandPalette';
+import { ForbiddenPage, NotFoundPage } from './components/ErrorPages';
 
 export default function App() {
   return (
     <AuthProvider>
+      <LocaleProvider>
+      <ToastProvider>
       <BrowserRouter>
+        <CommandPalette />
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Navigate to="/" replace />} />
-          <Route path="/register" element={<Navigate to="/" replace />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/p/:slug" element={<PublicPortfolioPage />} />
 
-          <Route
-            path="/unauthorized"
-            element={
-              <div className="flex min-h-screen items-center justify-center bg-cream-100 text-ink-700">
-                <div className="text-center">
-                  <p className="font-serif text-4xl text-forest-800">403</p>
-                  <p className="mt-2">This workspace is for a different AyuSetu role.</p>
-                  <a href="/dashboard" className="mt-4 inline-block text-sm font-semibold text-forest-700">
-                    Back to overview
-                  </a>
-                </div>
-              </div>
-            }
-          />
+          <Route path="/unauthorized" element={<ForbiddenPage />} />
 
           <Route
             element={
@@ -213,9 +211,11 @@ export default function App() {
             />
           </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
+      </ToastProvider>
+      </LocaleProvider>
     </AuthProvider>
   );
 }

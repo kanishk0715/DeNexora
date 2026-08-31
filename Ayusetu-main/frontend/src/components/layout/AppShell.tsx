@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -8,6 +8,7 @@ import {
   ClipboardList,
   LayoutDashboard,
   LogOut,
+  Search,
   Users,
   BarChart3,
   FileCheck,
@@ -17,6 +18,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Logo, ROLE_LABEL } from '../Logo';
+import { SearchTrigger } from '../CommandPalette';
+import { PageSkeleton } from '../ui/Skeleton';
 import type { User } from '../../types/api';
 
 const NAV: Record<User['role'], { to: string; label: string; icon: typeof LayoutDashboard }[]> = {
@@ -66,6 +69,14 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const [bell, setBell] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setReady(false);
+    const t = window.setTimeout(() => setReady(true), 380);
+    return () => window.clearTimeout(t);
+  }, [location.pathname]);
+
   if (!user) return null;
   const links = NAV[user.role];
 
@@ -85,7 +96,7 @@ export default function AppShell() {
                 end={item.to === '/dashboard'}
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
-                    isActive ? 'bg-forest-50 text-forest-800' : 'text-ink-500 hover:bg-slate-50 hover:text-ink-900'
+                    isActive ? 'bg-forest-50 text-forest-800' : 'text-ink-500 hover:bg-cream-100 hover:text-ink-900'
                   }`
                 }
               >
@@ -100,19 +111,28 @@ export default function AppShell() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {isDemo && (
-          <div className="bg-forest-50 px-4 py-1.5 text-center text-xs font-medium text-forest-800">
+          <div className="no-print bg-saffron-50 px-4 py-1.5 text-center text-xs font-medium text-saffron-700">
             Prototype — sample AYUSH data
           </div>
         )}
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur lg:px-8">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur lg:px-8">
           <div className="lg:hidden">
             <Logo compact />
           </div>
-          <p className="hidden text-sm text-ink-500 lg:block">Skill mapping · internships · placement</p>
-          <div className="relative flex items-center gap-2">
-            <button className="relative rounded-lg p-2 text-ink-700 hover:bg-slate-50" aria-label="Notifications" onClick={() => setBell(v => !v)}>
+          <SearchTrigger />
+          <p className="hidden text-sm text-ink-500 lg:block xl:hidden">Skill mapping · internships</p>
+          <div className="relative ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              className="rounded-lg p-2 text-ink-700 hover:bg-cream-100 md:hidden"
+              aria-label="Search internships"
+              onClick={() => window.dispatchEvent(new Event('ayusetu-palette'))}
+            >
+              <Search size={18} />
+            </button>
+            <button className="relative rounded-lg p-2 text-ink-700 hover:bg-cream-100" aria-label="Notifications" onClick={() => setBell(v => !v)}>
               <Bell size={18} />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-forest-600" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-saffron-500" />
             </button>
             {bell && (
               <div className="absolute right-12 top-11 z-30 w-72 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
@@ -155,31 +175,51 @@ export default function AppShell() {
           </div>
         </header>
 
-        <div className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-white px-2 py-2 lg:hidden">
-          {links.map(item => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/dashboard'}
-              className={({ isActive }) =>
-                `whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium ${
-                  isActive ? 'bg-forest-600 text-white' : 'bg-cream-100 text-ink-700'
-                }`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </div>
-
-        <main className="flex-1 px-4 py-8 lg:px-8">
+        <main className="flex-1 px-4 py-8 pb-24 lg:px-10 lg:pb-8">
           <AnimatePresence mode="wait">
-            <motion.div key={location.pathname} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-              <Outlet />
+            <motion.div
+              key={location.pathname}
+              className="mx-auto w-full max-w-5xl"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.2 }}
+            >
+              {ready ? <Outlet /> : <PageSkeleton />}
             </motion.div>
           </AnimatePresence>
         </main>
       </div>
+
+      <nav
+        className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+        aria-label="Workspace"
+      >
+        <div className="flex">
+          {links.map(item => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/dashboard'}
+                className={({ isActive }) =>
+                  `flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-medium ${
+                    isActive ? 'text-forest-800' : 'text-ink-500'
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <Icon size={18} className={isActive ? 'text-forest-700' : ''} />
+                    <span className="w-full truncate text-center">{item.label}</span>
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }
