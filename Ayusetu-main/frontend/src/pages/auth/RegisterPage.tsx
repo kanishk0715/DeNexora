@@ -1,17 +1,19 @@
 import { useState, FormEvent } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { api } from '../../lib/api';
+import { Logo } from '../../components/Logo';
+import { useAuth } from '../../contexts/AuthContext';
 
 const ROLES = [
-  { value: 'student', label: 'Student' },
-  { value: 'academician', label: 'Academician / Faculty' },
-  { value: 'industry', label: 'Industry Partner' },
-  { value: 'institution', label: 'Institution Admin' },
+  { value: 'student', label: 'AYUSH student' },
+  { value: 'academician', label: 'Faculty / academician' },
+  { value: 'industry', label: 'Hospital / industry partner' },
+  { value: 'institution', label: 'Institution admin' },
 ];
 
 export default function RegisterPage() {
+  const { enterDemo } = useAuth();
+  const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'student' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -22,93 +24,93 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
     try {
-      await axios.post(`${API_BASE}/auth/register`, form);
-      setSuccess('Registration successful! Please check your email to verify your account.');
+      await api.post('/auth/register', form);
+      setSuccess('Registration successful. If email is not configured, use prototype preview to continue.');
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Registration failed';
+      const msg = err.response?.data?.message || 'Server not running — you can still explore the prototype.';
       const fieldErrors = err.response?.data?.errors;
-      setError(fieldErrors ? fieldErrors.map((e: any) => e.message).join(', ') : msg);
+      setError(fieldErrors ? fieldErrors.map((x: any) => x.message).join(', ') : msg);
     } finally {
       setLoading(false);
     }
   };
 
-  if (success) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-md p-8 text-center">
-          <div className="text-green-600 text-5xl mb-4">✓</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Check your inbox</h2>
-          <p className="text-gray-500 text-sm mb-6">{success}</p>
-          <Link to="/login" className="text-indigo-600 text-sm hover:underline">Back to login</Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-md p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Create account</h1>
-        <p className="text-gray-500 mb-6 text-sm">Join the Academia-Industry Portal</p>
+    <div className="min-h-screen bg-cream-100">
+      <div className="mx-auto flex max-w-md flex-col px-4 py-12">
+        <Link to="/" className="mb-8">
+          <Logo />
+        </Link>
+        <div className="card p-8">
+          <h1 className="font-serif text-2xl font-semibold text-forest-900">Create your AyuSetu profile</h1>
+          <p className="mt-1 text-sm text-ink-500">One identity for skills, internships and placements</p>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
-          </div>
-        )}
+          {error && <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{error}</div>}
+          {success && <div className="mt-4 rounded-lg border border-forest-200 bg-forest-50 p-3 text-sm text-forest-800">{success}</div>}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {[
-            { id: 'name', label: 'Full name', type: 'text', placeholder: 'Your full name' },
-            { id: 'email', label: 'Email', type: 'email', placeholder: 'you@example.com' },
-            { id: 'password', label: 'Password', type: 'password', placeholder: 'Min. 8 characters' },
-          ].map(field => (
-            <div key={field.id}>
-              <label htmlFor={field.id} className="block text-sm font-medium text-gray-700 mb-1">
-                {field.label}
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            {[
+              { id: 'name', label: 'Full name', type: 'text' },
+              { id: 'email', label: 'Email', type: 'email' },
+              { id: 'password', label: 'Password (min. 8 characters)', type: 'password' },
+            ].map(field => (
+              <div key={field.id}>
+                <label htmlFor={field.id} className="mb-1 block text-sm font-medium text-ink-700">
+                  {field.label}
+                </label>
+                <input
+                  id={field.id}
+                  type={field.type}
+                  className="input"
+                  required
+                  value={(form as any)[field.id]}
+                  onChange={e => setForm(f => ({ ...f, [field.id]: e.target.value }))}
+                />
+              </div>
+            ))}
+            <div>
+              <label htmlFor="role" className="mb-1 block text-sm font-medium text-ink-700">
+                I am joining as
               </label>
-              <input
-                id={field.id}
-                type={field.type}
-                value={(form as any)[field.id]}
-                onChange={e => setForm(f => ({ ...f, [field.id]: e.target.value }))}
-                required
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder={field.placeholder}
-              />
+              <select
+                id="role"
+                className="input"
+                value={form.role}
+                onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
+              >
+                {ROLES.map(r => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
             </div>
-          ))}
-
-          <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-              I am a...
+            <label className="flex items-start gap-2 text-xs text-ink-500">
+              <input type="checkbox" required className="mt-0.5" />
+              I consent to share my skill profile with AYUSH hospitals and institutes I apply to (DPDP).
             </label>
-            <select
-              id="role"
-              value={form.role}
-              onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              {ROLES.map(r => (
-                <option key={r.value} value={r.value}>{r.label}</option>
-              ))}
-            </select>
-          </div>
+            <button type="submit" disabled={loading} className="btn-primary w-full">
+              {loading ? 'Creating…' : 'Create account'}
+            </button>
+          </form>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium text-sm hover:bg-indigo-700 disabled:opacity-50 transition"
-          >
-            {loading ? 'Creating account...' : 'Create account'}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-gray-500">
-          Already have an account?{' '}
-          <Link to="/login" className="text-indigo-600 hover:underline font-medium">Sign in</Link>
-        </p>
+          <p className="mt-6 text-center text-sm text-ink-500">
+            Already registered?{' '}
+            <Link to="/login" className="font-semibold text-forest-700 hover:underline">
+              Sign in
+            </Link>
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            enterDemo((form.role as any) || 'student');
+            navigate('/dashboard');
+          }}
+          className="mt-4 text-center text-sm font-semibold text-forest-700 hover:underline"
+        >
+          Skip to prototype as this role
+        </button>
       </div>
     </div>
   );

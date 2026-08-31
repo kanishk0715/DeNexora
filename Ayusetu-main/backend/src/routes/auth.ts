@@ -94,7 +94,7 @@ router.post('/register', registerLimiter, async (req: Request, res: Response) =>
       phone,
       organizationId,
       emailVerificationToken,
-      isEmailVerified: false,
+      isEmailVerified: process.env.NODE_ENV === 'development',
       // Industry partners require organization verification (Requirement 1.9)
       isOrganizationVerified: role !== UserRole.INDUSTRY,
     });
@@ -232,8 +232,8 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
       });
     }
 
-    // Check email verification
-    if (!user.isEmailVerified) {
+    // Check email verification (skipped in local development)
+    if (!user.isEmailVerified && process.env.NODE_ENV !== 'development') {
       return res.status(403).json({
         success: false,
         message: 'Please verify your email address before logging in',
