@@ -1,33 +1,89 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import axios from 'axios';
 import type { User } from '../types/api';
+import { api } from '../lib/api';
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
+  isDemo: boolean;
   login: (email: string, password: string) => Promise<void>;
+  enterDemo: (role: User['role']) => void;
   logout: () => void;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const DEMO_PROFILES: Record<User['role'], User> = {
+  student: {
+    _id: 'demo-student',
+    name: 'Ananya Sharma',
+    email: 'ananya@nia.edu.in',
+    role: 'student',
+    isEmailVerified: true,
+  },
+  academician: {
+    _id: 'demo-faculty',
+    name: 'Dr. Suresh Kulkarni',
+    email: 'suresh@aiia.gov.in',
+    role: 'academician',
+    isEmailVerified: true,
+  },
+  industry: {
+    _id: 'demo-industry',
+    name: 'Kavita Rao',
+    email: 'talent@keralaayurveda.inc',
+    role: 'industry',
+    isEmailVerified: true,
+  },
+  institution: {
+    _id: 'demo-institution',
+    name: 'Registrar, NIA Jaipur',
+    email: 'placement@nia.edu.in',
+    role: 'institution',
+    isEmailVerified: true,
+  },
+  admin: {
+    _id: 'demo-admin',
+    name: 'Ministry Analytics Cell',
+    email: 'analytics@ayush.gov.in',
+    role: 'admin',
+    isEmailVerified: true,
+  },
+};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [isDemo, setIsDemo] = useState(localStorage.getItem('ayusetu-demo') === '1');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      axios.get(`${API_BASE}/auth/me`)
-        .then(res => setUser(res.data.data.user))
+    const demoRole = localStorage.getItem('ayusetu-demo-role') as User['role'] | null;
+    if (localStorage.getItem('ayusetu-demo') === '1' && demoRole && DEMO_PROFILES[demoRole]) {
+      setUser(DEMO_PROFILES[demoRole]);
+      setIsDemo(true);
+      setLoading(false);
+      return;
+    }
+
+    if (token && token !== 'demo') {
+      api
+        .get('/auth/me')
+        .then(res => {
+          const u = res.data.data.user;
+          setUser({
+            _id: u.id || u._id,
+            name: u.name,
+            email: u.email,
+            role: u.role,
+            isEmailVerified: u.isEmailVerified ?? true,
+            profileImageUrl: u.profileImageUrl,
+          });
+        })
         .catch(() => {
           localStorage.removeItem('token');
           setToken(null);
-          delete axios.defaults.headers.common['Authorization'];
         })
         .finally(() => setLoading(false));
     } else {
@@ -35,24 +91,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token]);
 
+  const enterDemo = (role: User['role']) => {
+    localStorage.setItem('ayusetu-demo', '1');
+    localStorage.setItem('ayusetu-demo-role', role);
+    localStorage.setItem('token', 'demo');
+    setIsDemo(true);
+    setToken('demo');
+    setUser(DEMO_PROFILES[role]);
+  };
+
   const login = async (email: string, password: string) => {
-    const res = await axios.post(`${API_BASE}/auth/login`, { email, password });
-    const { token: newToken, user: newUser } = res.data.data;
+    const res = await api.post('/auth/login', { email, password });
+    const { token: newToken, user: u } = res.data.data;
+    localStorage.removeItem('ayusetu-demo');
+    localStorage.removeItem('ayusetu-demo-role');
     localStorage.setItem('token', newToken);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+    setIsDemo(false);
     setToken(newToken);
-    setUser(newUser);
+    setUser({
+      _id: u.id || u._id,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      isEmailVerified: true,
+      profileImageUrl: u.profileImageUrl,
+    });
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
+    localStorage.removeItem('ayusetu-demo');
+    localStorage.removeItem('ayusetu-demo-role');
     setToken(null);
     setUser(null);
+    setIsDemo(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, isDemo, login, enterDemo, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
