@@ -17,7 +17,7 @@ export function PageHeader({
     <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
         {kicker && <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-forest-600">{kicker}</p>}
-        <h1 className="text-3xl font-bold tracking-tight text-ink-900">{title}</h1>
+        <h1 className="font-serif text-3xl font-semibold tracking-tight text-ink-900 sm:text-[2.05rem]">{title}</h1>
         {subtitle && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-500">{subtitle}</p>}
       </div>
       {actions}
@@ -65,7 +65,7 @@ export function StatCard({ label, value, hint }: { label: string; value: string;
   return (
     <div className="card-hover p-5">
       <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">{label}</p>
-      <p className="mt-2 text-3xl font-bold text-forest-800">{value}</p>
+      <p className="mt-2 font-serif text-3xl font-semibold tabular-nums text-forest-800">{value}</p>
       {hint && <p className="mt-1 text-xs text-ink-500">{hint}</p>}
     </div>
   );
@@ -99,7 +99,7 @@ export function Modal({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-[2px]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -109,7 +109,7 @@ export function Modal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
-            className={`max-h-[90vh] w-full overflow-y-auto rounded-2xl bg-white p-6 shadow-card ${
+            className={`max-h-[90vh] w-full overflow-y-auto rounded-2xl bg-white p-6 shadow-xl ring-1 ring-black/5 ${
               size === 'lg' ? 'max-w-2xl' : 'max-w-lg'
             }`}
             initial={{ opacity: 0, y: 16, scale: 0.98 }}
@@ -120,7 +120,7 @@ export function Modal({
             <div className="flex items-start justify-between gap-4">
               <div>
                 {kicker && <p className="text-xs font-semibold uppercase tracking-wide text-forest-600">{kicker}</p>}
-                <h2 id="modal-title" className="mt-1 text-xl font-bold text-ink-900">
+                <h2 id="modal-title" className="mt-1 font-serif text-xl font-semibold text-ink-900">
                   {title}
                 </h2>
               </div>

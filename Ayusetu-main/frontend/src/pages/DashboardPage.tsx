@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ArrowRight, ClipboardList, Briefcase, FileCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { PageHeader, StatCard, MatchBar, StatusBadge } from '../components/ui/Primitives';
 import { ReadinessRing } from '../components/ui/ReadinessRing';
@@ -39,10 +40,37 @@ function StudentDash({ name }: { name: string }) {
           <StatCard label="Skill gaps" value="2" hint="Docs + Nadi Pariksha" />
         </div>
       </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        {[
+          { to: '/assessment', label: 'Continue assessment', hint: 'Write scores into your map', icon: ClipboardList },
+          { to: '/opportunities', label: 'Ranked internships', hint: 'Gap-aware match order', icon: Briefcase },
+          { to: '/portfolio', label: 'Public profile', hint: 'Unverified items stay hidden', icon: FileCheck },
+        ].map(item => {
+          const Icon = item.icon;
+          return (
+          <Link
+            key={item.to}
+            to={item.to}
+            className="group flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-forest-200 hover:shadow-md"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-forest-50 text-forest-700">
+              <Icon size={16} />
+            </span>
+            <span>
+              <span className="flex items-center gap-1 text-sm font-semibold text-ink-900">
+                {item.label}
+                <ArrowRight size={14} className="text-forest-600 opacity-0 transition group-hover:opacity-100" />
+              </span>
+              <span className="mt-0.5 block text-xs text-ink-500">{item.hint}</span>
+            </span>
+          </Link>
+          );
+        })}
+      </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="card p-5">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-serif text-lg text-forest-900">Recommended internships</h2>
+            <h2 className="font-serif text-lg font-semibold text-forest-900">Recommended internships</h2>
             <Link to="/opportunities" className="text-sm font-semibold text-forest-700 hover:underline">
               View all
             </Link>

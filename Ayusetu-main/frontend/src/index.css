@@ -21,7 +21,16 @@ body {
   min-width: 320px;
   min-height: 100vh;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  background: #faf6f0;
+  background:
+    radial-gradient(1200px 420px at 10% -10%, rgba(22, 85, 61, 0.06), transparent 55%),
+    radial-gradient(900px 380px at 100% 0%, rgba(196, 92, 38, 0.05), transparent 50%),
+    #faf6f0;
+  font-feature-settings: 'ss01' on, 'cv11' on;
+}
+
+::selection {
+  background: #d5eadc;
+  color: #0c2b21;
 }
 
 #root {
@@ -30,26 +39,31 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-forest-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-forest-700 disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-forest-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-forest-700 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-forest-800 transition hover:border-forest-200 hover:bg-forest-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-forest-800 transition duration-200 hover:border-forest-200 hover:bg-forest-50 active:scale-[0.98];
   }
   .input {
-    @apply w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-ink-900 placeholder:text-slate-400 transition focus:border-forest-500 focus:outline-none focus:ring-4 focus:ring-forest-500/10;
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-ink-900 placeholder:text-slate-400 transition focus:border-forest-500 focus:outline-none focus:ring-4 focus:ring-forest-500/15;
   }
   .card {
     @apply rounded-2xl border border-slate-200/80 bg-white shadow-card;
   }
   .card-hover {
-    @apply card transition duration-200 hover:-translate-y-0.5 hover:border-forest-200 hover:shadow-md;
+    @apply card transition duration-200 hover:-translate-y-1 hover:border-forest-200 hover:shadow-md;
   }
+}
+
+:focus-visible {
+  outline: 2px solid #16553d;
+  outline-offset: 2px;
 }
 
 .progress-line {
   height: 6px;
   border-radius: 999px;
-  background: #16553d;
+  background: linear-gradient(90deg, #124433, #1f6b47 55%, #c45c26);
   transition: width 0.45s ease;
 }
 

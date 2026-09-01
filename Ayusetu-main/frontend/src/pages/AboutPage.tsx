@@ -14,7 +14,7 @@ export default function AboutPage() {
       <SiteNav />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-14">
         <p className="text-xs font-semibold uppercase tracking-wide text-saffron-600">{c.kicker}</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">{c.title}</h1>
+        <h1 className="mt-3 font-serif text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">{c.title}</h1>
         <p className="mt-4 text-base leading-relaxed text-ink-500">{c.lead}</p>
 
         <section className="card mt-10 p-6 sm:p-8">

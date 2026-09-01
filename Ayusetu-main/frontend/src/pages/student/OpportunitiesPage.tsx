@@ -165,7 +165,7 @@ export default function OpportunitiesPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="card overflow-hidden p-0"
+              className="card overflow-hidden p-0 transition hover:border-forest-200 hover:shadow-md"
             >
               <div className="flex flex-col gap-4 p-5 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-2xl">

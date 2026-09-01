@@ -1,8 +1,7 @@
-
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Clock } from 'lucide-react';
+import { Clock, Keyboard } from 'lucide-react';
 import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer } from 'recharts';
 import { PageHeader } from '../../components/ui/Primitives';
 import { ReadinessRing } from '../../components/ui/ReadinessRing';
@@ -53,6 +52,29 @@ export default function AssessmentPage() {
     }
   }, [seconds, done, toast]);
 
+  useEffect(() => {
+    if (done || !q) return;
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT')) return;
+      const map: Record<string, number> = { a: 0, b: 1, c: 2, d: 3, '1': 0, '2': 1, '3': 2, '4': 3 };
+      const idx = map[e.key.toLowerCase()];
+      if (idx !== undefined && q.options[idx] !== undefined) {
+        e.preventDefault();
+        setAnswers(a => ({ ...a, [q.id]: idx }));
+      }
+      if (e.key === 'Enter' && answers[q.id] !== undefined) {
+        e.preventDefault();
+        if (step === ASSESSMENT_QUESTIONS.length - 1) {
+          setDone(true);
+          toast('success', 'Assessment scored. Skill map updated.');
+        } else setStep(s => s + 1);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [answers, done, q, step, toast]);
+
   if (done) {
     return (
       <div className="mx-auto max-w-3xl">
@@ -96,8 +118,8 @@ export default function AssessmentPage() {
                   <PolarGrid stroke="#e7ebf1" />
                   <PolarAngleAxis dataKey="skill" tick={{ fontSize: 11, fill: '#334155' }} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10 }} />
-                  <Radar name="You" dataKey="you" stroke="#1d4e89" fill="#1d4e89" fillOpacity={0.35} />
-                  <Radar name="Benchmark" dataKey="bench" stroke="#8f6246" fill="#8f6246" fillOpacity={0.12} />
+                  <Radar name="You" dataKey="you" stroke="#16553d" fill="#16553d" fillOpacity={0.32} />
+                  <Radar name="Benchmark" dataKey="bench" stroke="#c45c26" fill="#c45c26" fillOpacity={0.1} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
@@ -112,7 +134,7 @@ export default function AssessmentPage() {
       <PageHeader
         kicker="Skill assessment"
         title="AYUSH competency check"
-        subtitle="Tap an answer. The timer is for the full paper — results feed match scores."
+        subtitle="Tap an answer or use A–D. The timer is for the full paper — results feed match scores."
         actions={
           <div
             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold tabular-nums ${
@@ -136,28 +158,39 @@ export default function AssessmentPage() {
         <div className="progress-line" style={{ width: `${Math.max(8, pct)}%` }} />
       </div>
       <div className="card overflow-hidden p-6 sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">
-          Question {step + 1} of {ASSESSMENT_QUESTIONS.length}
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">
+            Question {step + 1} of {ASSESSMENT_QUESTIONS.length}
+          </p>
+          <p className="inline-flex items-center gap-1 text-[11px] font-medium text-ink-500">
+            <Keyboard size={12} /> A–D · Enter to continue
+          </p>
+        </div>
         <AnimatePresence mode="wait">
           <motion.div key={q.id} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }}>
             <div className="mt-4 overflow-hidden rounded-2xl">
               <QuestionArt id={q.id} />
             </div>
-            <h2 className="mt-4 text-xl font-semibold text-ink-900">{q.text}</h2>
+            <h2 className="mt-4 font-serif text-xl font-semibold text-ink-900">{q.text}</h2>
             <div className="mt-6 space-y-2">
               {q.options.map((opt, i) => (
                 <button
                   key={opt}
                   type="button"
                   onClick={() => setAnswers(a => ({ ...a, [q.id]: i }))}
-                  className={`w-full rounded-xl border px-4 py-3.5 text-left text-sm transition ${
+                  className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3.5 text-left text-sm transition ${
                     answers[q.id] === i
                       ? 'border-forest-700 bg-forest-50 font-medium shadow-sm ring-2 ring-forest-700/20'
                       : 'border-slate-200 hover:border-forest-300 hover:bg-cream-50'
                   }`}
                 >
-                  <span className="mr-2 text-xs font-bold text-slate-400">{String.fromCharCode(65 + i)}</span>
+                  <span
+                    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[11px] font-bold ${
+                      answers[q.id] === i ? 'bg-forest-700 text-white' : 'bg-slate-100 text-slate-500'
+                    }`}
+                  >
+                    {String.fromCharCode(65 + i)}
+                  </span>
                   {opt}
                 </button>
               ))}

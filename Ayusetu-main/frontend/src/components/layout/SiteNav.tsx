@@ -42,7 +42,7 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
             to={l.to}
             onClick={onClick}
             className={`rounded-lg px-3 py-2 text-sm font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee] ${
-              location.pathname === l.to ? 'bg-[#e8f3ee]' : ''
+              location.pathname === l.to ? 'bg-[#e8f3ee] shadow-sm' : ''
             }`}
           >
             {l.label}

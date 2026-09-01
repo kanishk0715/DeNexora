@@ -1,8 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { SiteNav } from '../../components/layout/SiteNav';
-import { SiteFooter } from '../../components/layout/SiteFooter';
+import { AuthFrame } from '../../components/layout/AuthFrame';
 
 export default function LoginPage() {
   const { login, enterDemo } = useAuth();
@@ -27,58 +26,54 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-cream-100">
-      <SiteNav />
-      <main className="flex flex-1 items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          <div className="card p-8">
-            <h1 className="text-2xl font-bold text-ink-900">Sign in</h1>
-            <p className="mt-1 text-sm text-ink-500">Access your AyuSetu workspace</p>
-            {error && <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-800">{error}</div>}
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <div>
-                <label htmlFor="email" className="mb-1 block text-sm font-medium text-ink-700">
-                  Email
-                </label>
-                <input id="email" className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-              </div>
-              <div>
-                <label htmlFor="password" className="mb-1 block text-sm font-medium text-ink-700">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  className="input"
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <button type="submit" disabled={loading} className="btn-primary w-full">
-                {loading ? 'Signing in…' : 'Sign in'}
-              </button>
-            </form>
-            <p className="mt-6 text-center text-sm text-ink-500">
-              New?{' '}
-              <Link to="/register" className="font-semibold text-forest-700">
-                Create an account
-              </Link>
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              enterDemo('student');
-              navigate('/dashboard');
-            }}
-            className="btn-secondary mt-4 w-full"
-          >
-            Open student prototype
-          </button>
+    <AuthFrame>
+      <div className="w-full max-w-md">
+        <div className="card p-8">
+          <h1 className="font-serif text-2xl font-semibold text-ink-900">Sign in</h1>
+          <p className="mt-1 text-sm text-ink-500">Access your AyuSetu workspace</p>
+          {error && <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-800">{error}</div>}
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <div>
+              <label htmlFor="email" className="mb-1 block text-sm font-medium text-ink-700">
+                Email
+              </label>
+              <input id="email" className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+            </div>
+            <div>
+              <label htmlFor="password" className="mb-1 block text-sm font-medium text-ink-700">
+                Password
+              </label>
+              <input
+                id="password"
+                className="input"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <button type="submit" disabled={loading} className="btn-primary w-full">
+              {loading ? 'Signing in…' : 'Sign in'}
+            </button>
+          </form>
+          <p className="mt-6 text-center text-sm text-ink-500">
+            New?{' '}
+            <Link to="/register" className="font-semibold text-forest-700 hover:underline">
+              Create an account
+            </Link>
+          </p>
         </div>
-      </main>
-      <SiteFooter />
-    </div>
+        <button
+          type="button"
+          onClick={() => {
+            enterDemo('student');
+            navigate('/dashboard');
+          }}
+          className="btn-secondary mt-4 w-full"
+        >
+          Open student prototype
+        </button>
+      </div>
+    </AuthFrame>
   );
 }

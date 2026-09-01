@@ -84,7 +84,7 @@ export default function AppShell() {
   return (
     <div className="flex min-h-screen bg-cream-100">
       <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
-        <div className="border-b border-slate-100 px-4 py-3">
+        <div className="border-b border-slate-100 bg-gradient-to-b from-forest-50/70 to-white px-4 py-3">
           <MinistryLogo className="h-16 w-auto" />
         </div>
         <nav className="flex-1 space-y-0.5 p-3">
@@ -96,8 +96,10 @@ export default function AppShell() {
                 to={item.to}
                 end={item.to === '/dashboard'}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
-                    isActive ? 'bg-forest-50 text-forest-800' : 'text-ink-500 hover:bg-cream-100 hover:text-ink-900'
+                  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                    isActive
+                      ? 'bg-forest-50 text-forest-800 shadow-sm ring-1 ring-forest-100'
+                      : 'text-ink-500 hover:bg-cream-100 hover:text-ink-900'
                   }`
                 }
               >

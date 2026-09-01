@@ -2,8 +2,7 @@ import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { SiteNav } from '../../components/layout/SiteNav';
-import { SiteFooter } from '../../components/layout/SiteFooter';
+import { AuthFrame } from '../../components/layout/AuthFrame';
 
 const ROLES = [
   { value: 'student', label: 'AYUSH student' },
@@ -37,12 +36,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-cream-100">
-      <SiteNav />
-      <main className="flex flex-1 items-center justify-center px-4 py-12">
+    <AuthFrame>
         <div className="w-full max-w-md">
           <div className="card p-8">
-            <h1 className="text-2xl font-bold text-ink-900">Create your AyuSetu profile</h1>
+            <h1 className="font-serif text-2xl font-semibold text-ink-900">Create your AyuSetu profile</h1>
             <p className="mt-1 text-sm text-ink-500">One identity for skills, internships and placements</p>
 
             {error && <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{error}</div>}
@@ -112,8 +109,6 @@ export default function RegisterPage() {
             Skip to prototype as this role
           </button>
         </div>
-      </main>
-      <SiteFooter />
-    </div>
+    </AuthFrame>
   );
 }

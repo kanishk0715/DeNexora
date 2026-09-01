@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { LayoutGroup, motion } from 'framer-motion';
 import {
   ArrowRight,
   BadgeCheck,
@@ -9,7 +9,10 @@ import {
   Briefcase,
   Building2,
   GraduationCap,
+  Landmark,
   ShieldCheck,
+  Stethoscope,
+  BookOpen,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocale } from '../contexts/LocaleContext';
@@ -19,6 +22,15 @@ import { SiteNav } from '../components/layout/SiteNav';
 import { SiteFooter } from '../components/layout/SiteFooter';
 import { Modal } from '../components/ui/Primitives';
 import { COPY, PARTNERS } from '../i18n/public';
+import { CountUp } from '../components/ui/CountUp';
+
+const ROLE_ICONS = {
+  student: GraduationCap,
+  academician: BookOpen,
+  industry: Stethoscope,
+  institution: Landmark,
+  admin: ShieldCheck,
+} as const;
 
 const FEATURE_ICONS = [GraduationCap, Building2, Brain, Briefcase, BarChart3];
 
@@ -66,6 +78,7 @@ export default function LandingPage() {
   const [role, setRole] = useState<User['role'] | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [tab, setTab] = useState('students');
+  const [howStep, setHowStep] = useState(0);
   const t = COPY[lang];
 
   const questions = role ? QUESTIONS[role] ?? [] : [];
@@ -120,17 +133,26 @@ export default function LandingPage() {
         <p className="-mt-3 mb-4 text-sm text-ink-500">{role ? t.modal.help : t.modal.then}</p>
         {!role && (
           <div className="grid gap-3">
-            {DEMO_ROLES.map(r => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => begin(r)}
-                className="rounded-xl border border-slate-200 p-4 text-left transition hover:border-forest-400 hover:bg-forest-50"
-              >
-                <p className="font-semibold text-ink-900">{t.roles[r].label}</p>
-                <p className="mt-1 text-sm text-ink-500">{t.roles[r].hint}</p>
-              </button>
-            ))}
+            {DEMO_ROLES.map(r => {
+              const Icon = ROLE_ICONS[r];
+              return (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => begin(r)}
+                  className="group flex items-start gap-3 rounded-xl border border-slate-200 p-4 text-left transition hover:border-forest-400 hover:bg-forest-50"
+                >
+                  <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-700 group-hover:bg-white">
+                    <Icon size={18} />
+                  </span>
+                  <span>
+                    <p className="font-semibold text-ink-900">{t.roles[r].label}</p>
+                    <p className="mt-1 text-sm text-ink-500">{t.roles[r].hint}</p>
+                  </span>
+                  <ArrowRight size={16} className="ml-auto mt-2 shrink-0 text-forest-600 opacity-0 transition group-hover:opacity-100" />
+                </button>
+              );
+            })}
           </div>
         )}
         {role && (
@@ -203,11 +225,12 @@ export default function LandingPage() {
             <div className="absolute inset-0 bg-gradient-to-b from-cream-100/25 via-transparent to-cream-100" />
           </div>
           <div className="relative h-1.5 bg-[linear-gradient(90deg,_#c45c26_0%,_#c45c26_34%,_#faf6f0_34%,_#faf6f0_66%,_#16553d_66%)]" />
-          <div className="relative mx-auto max-w-3xl px-4 pb-10 pt-16 text-center sm:pt-20">
+          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-12 lg:grid-cols-2 lg:pb-20 lg:pt-16">
+            <div className="text-center lg:text-left">
             <motion.p
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex rounded-full bg-saffron-50 px-3 py-1 text-xs font-semibold text-saffron-700"
+              className="inline-flex rounded-full border border-saffron-100 bg-saffron-50/90 px-3 py-1 text-xs font-semibold text-saffron-700 shadow-sm"
             >
               {t.hero.badge}
             </motion.p>
@@ -215,7 +238,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="mt-5 text-4xl font-bold leading-tight tracking-tight text-ink-900 sm:text-5xl"
+              className="mt-5 font-serif text-4xl font-semibold leading-[1.15] tracking-tight text-ink-900 sm:text-5xl lg:text-[3.15rem]"
             >
               {t.hero.title}
             </motion.h1>
@@ -223,7 +246,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink-500"
+              className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink-500 lg:mx-0"
             >
               {t.hero.body}
             </motion.p>
@@ -231,7 +254,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.16 }}
-              className="mt-8 flex flex-wrap items-center justify-center gap-3"
+              className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start"
             >
               <button
                 type="button"
@@ -248,7 +271,7 @@ export default function LandingPage() {
                 {t.hero.how}
               </a>
             </motion.div>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-5 text-sm text-ink-500">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-5 text-sm text-ink-500 lg:justify-start">
               <span className="flex items-center gap-2">
                 <ShieldCheck size={16} className="text-forest-600" /> {t.hero.consent}
               </span>
@@ -256,22 +279,25 @@ export default function LandingPage() {
                 <BadgeCheck size={16} className="text-forest-600" /> {t.hero.verified}
               </span>
             </div>
-          </div>
+            </div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="relative mx-auto max-w-xl px-4 pb-16"
+            className="mx-auto w-full max-w-xl lg:mx-0"
           >
             <LiveMatchCard />
           </motion.div>
+          </div>
         </section>
 
-        <section className="border-y border-slate-200 bg-white py-10">
+        <section className="relative z-[1] border-y border-slate-200 bg-white/90 py-10 backdrop-blur-sm">
           <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-4 sm:grid-cols-4">
             {t.stats.map(s => (
               <div key={s.l} className="text-center">
-                <p className="text-2xl font-bold text-forest-800 sm:text-3xl">{s.n}</p>
+                <p className="font-serif text-2xl font-semibold tabular-nums text-forest-800 sm:text-3xl">
+                  <CountUp value={s.n} />
+                </p>
                 <p className="mt-1 text-xs font-medium text-ink-500 sm:text-sm">{s.l}</p>
               </div>
             ))}
@@ -284,7 +310,10 @@ export default function LandingPage() {
             <h2 className="mt-2 text-center text-lg font-bold text-ink-900 sm:text-xl">{t.partners.title}</h2>
             <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
               {PARTNERS.map(p => (
-                <article key={p.ab} className="card flex flex-col items-center px-3 py-4 text-center">
+                <article
+                  key={p.ab}
+                  className="card group flex flex-col items-center px-3 py-4 text-center transition hover:-translate-y-0.5 hover:border-forest-200 hover:shadow-md"
+                >
                   <span className="text-sm font-bold tracking-wide text-forest-800">{p.ab}</span>
                   <span className="mt-1 line-clamp-2 text-[11px] leading-snug text-ink-500">{p.name}</span>
                   <span className="mt-1 text-[10px] text-ink-500">{p.city}</span>
@@ -298,23 +327,32 @@ export default function LandingPage() {
           <div className="mx-auto max-w-6xl px-4">
             <div className="mx-auto max-w-2xl text-center">
               <p className="text-xs font-semibold uppercase tracking-wide text-forest-600">{t.audience.kicker}</p>
-              <h2 className="mt-2 text-2xl font-bold text-ink-900 sm:text-3xl">{t.audience.title}</h2>
+              <h2 className="mt-2 font-serif text-2xl font-semibold text-ink-900 sm:text-3xl">{t.audience.title}</h2>
               <p className="mt-2 text-sm text-ink-500">{t.audience.subtitle}</p>
             </div>
-            <div className="mx-auto mt-8 flex max-w-xl justify-center gap-2">
+            <LayoutGroup>
+            <div className="mx-auto mt-8 flex max-w-xl justify-center gap-1 rounded-full bg-cream-100 p-1">
               {t.audience.tabs.map(x => (
                 <button
                   key={x.id}
                   type="button"
                   onClick={() => setTab(x.id)}
-                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                    tab === x.id ? 'bg-forest-700 text-white shadow' : 'bg-cream-100 text-ink-700 hover:bg-cream-200'
-                  }`}
+                  className="relative rounded-full px-4 py-2 text-sm font-semibold transition"
                 >
-                  {x.label}
+                  {tab === x.id && (
+                    <motion.span
+                      layoutId="audience-pill"
+                      className="absolute inset-0 rounded-full bg-forest-700 shadow"
+                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                    />
+                  )}
+                  <span className={`relative z-10 ${tab === x.id ? 'text-white' : 'text-ink-700 hover:text-forest-800'}`}>
+                    {x.label}
+                  </span>
                 </button>
               ))}
             </div>
+            </LayoutGroup>
             <motion.div key={audience.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mx-auto mt-8 max-w-2xl card p-8">
               <h3 className="text-lg font-bold text-ink-900">{audience.heading}</h3>
               <ul className="mt-4 space-y-3 text-sm text-ink-700">
@@ -332,7 +370,7 @@ export default function LandingPage() {
         <section id="how-it-works" className="scroll-mt-24 py-16">
           <div className="mx-auto max-w-6xl px-4">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-2xl font-bold text-ink-900 sm:text-3xl">{t.how.title}</h2>
+              <h2 className="font-serif text-2xl font-semibold text-ink-900 sm:text-3xl">{t.how.title}</h2>
               <p className="mt-2 text-sm text-ink-500">{t.how.subtitle}</p>
             </div>
             <ol className="mt-10 grid gap-4 sm:grid-cols-5">
@@ -343,7 +381,11 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.06 }}
-                  className="card p-5 text-center sm:text-left"
+                  onClick={() => setHowStep(i)}
+                  onMouseEnter={() => setHowStep(i)}
+                  className={`card cursor-pointer p-5 text-center transition sm:text-left ${
+                    howStep === i ? 'border-forest-300 ring-2 ring-forest-600/15' : 'hover:border-forest-200'
+                  }`}
                 >
                   <span className="text-xs font-bold text-forest-600">0{i + 1}</span>
                   <p className="mt-2 font-semibold text-ink-900">{s.t}</p>
@@ -362,7 +404,7 @@ export default function LandingPage() {
         <section id="features" className="scroll-mt-24 border-y border-slate-200 bg-white py-16">
           <div className="mx-auto max-w-6xl px-4">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-2xl font-bold text-ink-900 sm:text-3xl">{t.features.title}</h2>
+              <h2 className="font-serif text-2xl font-semibold text-ink-900 sm:text-3xl">{t.features.title}</h2>
               <p className="mt-2 text-sm text-ink-500">{t.features.subtitle}</p>
             </div>
             <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -392,7 +434,7 @@ export default function LandingPage() {
         <section id="pathways" className="scroll-mt-24 py-16">
           <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 lg:grid-cols-2">
             <div>
-              <h2 className="text-2xl font-bold text-ink-900 sm:text-3xl">{t.pathways.title}</h2>
+              <h2 className="font-serif text-2xl font-semibold text-ink-900 sm:text-3xl">{t.pathways.title}</h2>
               <p className="mt-3 text-sm leading-relaxed text-ink-500">{t.pathways.body}</p>
               <ul className="mt-6 space-y-3 text-sm text-ink-700">
                 {t.pathways.points.map(p => (
@@ -416,7 +458,13 @@ export default function LandingPage() {
                     <span className="font-semibold text-forest-700">{s.v}</span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-full rounded-full bg-forest-600" style={{ width: `${s.v}%` }} />
+                    <motion.div
+                      className="h-full rounded-full bg-forest-600"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${s.v}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                    />
                   </div>
                 </div>
               ))}
@@ -427,17 +475,26 @@ export default function LandingPage() {
         <section id="workspaces" className="scroll-mt-24 border-t border-slate-200 bg-white py-16">
           <div className="mx-auto max-w-6xl px-4">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-2xl font-bold text-ink-900 sm:text-3xl">{t.workspaces.title}</h2>
+              <h2 className="font-serif text-2xl font-semibold text-ink-900 sm:text-3xl">{t.workspaces.title}</h2>
               <p className="mt-2 text-sm text-ink-500">{t.workspaces.subtitle}</p>
             </div>
             <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {DEMO_ROLES.map(r => (
-                <button key={r} type="button" onClick={() => begin(r)} className="card-hover p-6 text-left">
-                  <p className="text-lg font-bold text-forest-800">{t.roles[r].label}</p>
+              {DEMO_ROLES.map(r => {
+                const Icon = ROLE_ICONS[r];
+                return (
+                <button key={r} type="button" onClick={() => begin(r)} className="card-hover group p-6 text-left">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-forest-50 text-forest-700">
+                    <Icon size={20} />
+                  </span>
+                  <p className="mt-4 text-lg font-bold text-forest-800">{t.roles[r].label}</p>
                   <p className="mt-1 text-sm text-ink-500">{t.roles[r].hint}</p>
-                  <p className="mt-4 text-sm font-semibold text-forest-600">{t.workspaces.start}</p>
+                  <p className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-forest-600">
+                    {t.workspaces.start}
+                    <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
+                  </p>
                 </button>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

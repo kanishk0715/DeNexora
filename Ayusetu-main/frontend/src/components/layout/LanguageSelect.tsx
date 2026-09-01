@@ -1,3 +1,4 @@
+import { ChevronsUpDown } from 'lucide-react';
 import { useLocale } from '../../contexts/LocaleContext';
 import { INTERFACE_LANGUAGES, type Lang } from '../../i18n/languages';
 
@@ -11,7 +12,7 @@ export function LanguageSelect() {
       <select
         value={lang}
         onChange={e => setLang(e.target.value as Lang)}
-        className="max-w-[9.5rem] cursor-pointer appearance-none rounded-lg border border-[#e4f4ea] bg-white py-1.5 pl-2.5 pr-7 text-xs font-semibold text-[#0b5c3a] hover:bg-[#e8f3ee] sm:max-w-[11rem]"
+        className="max-w-[9.5rem] cursor-pointer appearance-none rounded-lg border border-[#e4f4ea] bg-white py-1.5 pl-2.5 pr-8 text-xs font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee] sm:max-w-[11rem]"
         aria-label={`Language: ${current.native}`}
       >
         <option value="en">English</option>
@@ -23,9 +24,7 @@ export function LanguageSelect() {
           ))}
         </optgroup>
       </select>
-      <span className="pointer-events-none absolute right-2 text-[10px] text-ink-500" aria-hidden>
-        ▾
-      </span>
+      <ChevronsUpDown size={12} className="pointer-events-none absolute right-2 text-[#0b5c3a]/70" aria-hidden />
     </label>
   );
 }
