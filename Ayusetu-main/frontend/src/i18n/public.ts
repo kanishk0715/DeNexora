@@ -35,6 +35,7 @@ export const COPY: Record<
 > = {
   en: {
     nav: {
+      home: 'Home',
       how: 'How it works',
       forYou: 'For you',
       features: 'Features',
@@ -179,6 +180,7 @@ export const COPY: Record<
   },
   hi: {
     nav: {
+      home: 'होम',
       how: 'कैसे काम करता है',
       forYou: 'आपके लिए',
       features: 'विशेषताएँ',

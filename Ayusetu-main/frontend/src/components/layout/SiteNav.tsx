@@ -1,6 +1,4 @@
-import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
 import { Logo } from '../Logo';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocale } from '../../contexts/LocaleContext';
@@ -11,19 +9,18 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
   const { lang, toggleLang } = useLocale();
   const location = useLocation();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
   const onLanding = location.pathname === '/';
   const c = COPY[lang].nav;
 
-  const href = (hash: string) => (onLanding ? `#${hash}` : `/#${hash}`);
+  const activeHash = location.hash.replace('#', '');
 
   const start = () => {
-    setOpen(false);
     if (onGetStarted) onGetStarted();
     else navigate('/?start=1');
   };
 
   const links: { to?: string; hash?: string; label: string }[] = [
+    { to: '/', label: c.home },
     { hash: 'how-it-works', label: c.how },
     { hash: 'for-you', label: c.forYou },
     { hash: 'features', label: c.features },
@@ -31,46 +28,14 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
     { hash: 'workspaces', label: c.workspaces },
   ];
 
-  const NavItems = ({ onClick }: { onClick?: () => void }) => (
-    <>
-      {links.map(l =>
-        l.to ? (
-          <Link
-            key={l.to}
-            to={l.to}
-            onClick={onClick}
-            className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-cream-100 hover:text-forest-800 ${
-              location.pathname === l.to ? 'text-forest-800' : 'text-ink-700'
-            }`}
-          >
-            {l.label}
-          </Link>
-        ) : (
-          <a
-            key={l.hash}
-            href={href(l.hash!)}
-            onClick={onClick}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-ink-700 transition hover:bg-cream-100 hover:text-forest-800"
-          >
-            {l.label}
-          </a>
-        ),
-      )}
-    </>
-  );
-
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
         <Link to="/" className="shrink-0" aria-label="AyuSetu home">
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary">
-          <NavItems />
-        </nav>
-
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <button
             type="button"
             onClick={toggleLang}
@@ -96,24 +61,39 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
               </button>
             </>
           )}
-          <button
-            type="button"
-            className="rounded-lg p-2 text-ink-700 hover:bg-cream-100 lg:hidden"
-            aria-label={open ? 'Close menu' : 'Open menu'}
-            onClick={() => setOpen(v => !v)}
-          >
-            {open ? <X size={20} /> : <Menu size={20} />}
-          </button>
         </div>
       </div>
 
-      {open && (
-        <div className="border-t border-slate-100 bg-white px-4 py-3 lg:hidden">
-          <nav className="flex flex-col gap-1" aria-label="Mobile">
-            <NavItems onClick={() => setOpen(false)} />
-          </nav>
+      <nav className="border-t border-slate-100 bg-cream-50/80" aria-label="Primary">
+        <div className="mx-auto flex max-w-6xl items-center gap-0.5 overflow-x-auto px-2 py-1.5 sm:justify-center sm:px-4">
+          {links.map(l => {
+            const active = l.to
+              ? location.pathname === l.to && (l.to !== '/' || !activeHash)
+              : onLanding && activeHash === l.hash;
+            const className = `whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-white hover:text-forest-800 ${
+              active ? 'bg-white text-forest-800 shadow-sm' : 'text-ink-700'
+            }`;
+            return l.to ? (
+              <Link key={l.to} to={l.to} className={className}>
+                {l.label}
+              </Link>
+            ) : (
+              <Link
+                key={l.hash}
+                to={{ pathname: '/', hash: l.hash }}
+                className={className}
+                onClick={() => {
+                  if (onLanding) {
+                    document.getElementById(l.hash!)?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
         </div>
-      )}
+      </nav>
     </header>
   );
 }

@@ -115,6 +115,15 @@ export default function LandingPage() {
     }
   }, [location.search]);
 
+  useEffect(() => {
+    const id = location.hash.replace('#', '');
+    if (!id) return;
+    const t = window.setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+    return () => window.clearTimeout(t);
+  }, [location.hash]);
+
   return (
     <div className="flex min-h-screen flex-col bg-cream-100 text-ink-900">
       <Modal
