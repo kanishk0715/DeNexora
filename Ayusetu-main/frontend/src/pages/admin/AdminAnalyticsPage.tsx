@@ -1,9 +1,23 @@
 import { PageHeader, StatCard } from '../../components/ui/Primitives';
-import { STATE_PLACEMENTS } from '../../data/demo';
+import { STATE_PLACEMENTS, DEMO_OPPORTUNITIES } from '../../data/demo';
 import { StatePulseGrid } from '../../components/ministry/StatePulseGrid';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { useEffect, useState } from 'react';
+import { fetchSkillDemand } from '../../lib/api';
 
 export default function AdminAnalyticsPage() {
+  const [demand, setDemand] = useState<{ skill: string; postings: number }[]>([]);
+
+  useEffect(() => {
+    void fetchSkillDemand(
+      DEMO_OPPORTUNITIES.map(o => ({
+        id: o._id,
+        required_skills: o.requiredSkills.map(s => ({ name: s.name })),
+      })),
+    ).then(d => {
+      if (d?.top_skills) setDemand(d.top_skills);
+    });
+  }, []);
   return (
     <div>
       <PageHeader
@@ -18,6 +32,18 @@ export default function AdminAnalyticsPage() {
         <StatCard label="Open requirements" value="1,042" />
       </div>
       <StatePulseGrid />
+      {demand.length > 0 && (
+        <div className="card mt-6 p-5">
+          <h2 className="mb-3 font-semibold text-forest-900">NLP skill demand (from live postings)</h2>
+          <ul className="flex flex-wrap gap-2">
+            {demand.map(s => (
+              <li key={s.skill} className="rounded-full bg-forest-50 px-3 py-1 text-xs font-medium text-forest-800">
+                {s.skill} · {s.postings}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="card mt-6 p-5">
         <h2 className="mb-4 font-semibold text-forest-900">Internships vs jobs (top states)</h2>
         <ResponsiveContainer width="100%" height={280}>

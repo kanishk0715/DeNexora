@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { PageHeader, StatusBadge, MatchBar, Avatar, SkillChipPicker } from '../../components/ui/Primitives';
 import { SlideOver } from '../../components/ui/SlideOver';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { DEMO_INDUSTRY_APPLICANTS } from '../../data/demo';
+import { DEMO_INDUSTRY_APPLICANTS, DEMO_OPPORTUNITIES } from '../../data/demo';
+import { rankApplicantsNlp } from '../../lib/api';
 import { useToast } from '../../contexts/ToastContext';
 import { BadgeCheck, MapPin } from 'lucide-react';
 
@@ -25,6 +26,8 @@ export default function IndustryApplicantsPage() {
   const [rows, setRows] = useState(DEMO_INDUSTRY_APPLICANTS);
   const [selected, setSelected] = useState<Applicant | null>(null);
   const [passWho, setPassWho] = useState<Applicant | null>(null);
+  const [nlpBusy, setNlpBusy] = useState(false);
+  const [why, setWhy] = useState<Record<string, string>>({});
 
   const institutes = useMemo(() => ['All', ...Array.from(new Set(DEMO_INDUSTRY_APPLICANTS.map(a => a.college)))], []);
 
@@ -51,12 +54,60 @@ export default function IndustryApplicantsPage() {
     toast('success', message);
   };
 
+  const runNlpRank = async () => {
+    setNlpBusy(true);
+    const posting = {
+      title: DEMO_OPPORTUNITIES[0].title,
+      required_skills: DEMO_OPPORTUNITIES[0].requiredSkills.map(s => ({
+        name: s.name,
+        required_score: s.requiredScore,
+      })),
+    };
+    const data = await rankApplicantsNlp(
+      posting,
+      rows.map(a => ({
+        id: a.id,
+        name: a.name,
+        skills: a.skills,
+        verified: a.verified,
+        hours: a.hours,
+      })),
+    );
+    if (data?.applicants?.length) {
+      const order = data.applicants.map(x => String(x.id ?? x.name));
+      const notes: Record<string, string> = {};
+      data.applicants.forEach(x => {
+        const id = String(x.id ?? '');
+        if (id && x.explanation) notes[id] = String(x.explanation);
+      });
+      setWhy(notes);
+      setRows(prev => {
+        const byId = new Map(prev.map(a => [a.id, a]));
+        const next = order.map(id => byId.get(id)).filter(Boolean) as Applicant[];
+        const rest = prev.filter(a => !order.includes(a.id));
+        return [...next, ...rest].map(a => {
+          const hit = data.applicants.find(x => String(x.id) === a.id);
+          return hit && typeof hit.nlp_match === 'number' ? { ...a, match: Math.round(hit.nlp_match) } : a;
+        });
+      });
+      toast('success', 'Applicants ranked with NLP match + clinical hours.');
+    } else {
+      toast('info', 'Start the AI service (port 8000) to rank applicants.');
+    }
+    setNlpBusy(false);
+  };
+
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
         kicker="Talent shortlist"
         title="Ranked applicants"
         subtitle="AI match uses verified skills first. Open a profile to shortlist, interview or pass."
+        actions={
+          <button type="button" className="btn-secondary" disabled={nlpBusy} onClick={() => void runNlpRank()}>
+            {nlpBusy ? 'Ranking…' : 'NLP rank'}
+          </button>
+        }
       />
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -193,6 +244,7 @@ export default function IndustryApplicantsPage() {
               <MatchBar score={current.match} />
             </div>
             <p className="mt-5 text-sm leading-relaxed text-ink-700">{current.about}</p>
+            {why[current.id] && <p className="mt-3 text-xs font-medium text-forest-800">{why[current.id]}</p>}
             <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-ink-500">Skills</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {current.skills.map(s => (

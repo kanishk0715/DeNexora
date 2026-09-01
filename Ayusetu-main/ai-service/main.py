@@ -13,6 +13,21 @@ import re
 import io
 from dotenv import load_dotenv
 from embedding_service import get_embedding_service
+from nlp_pipeline import (
+    analyze_resume,
+    classify_research,
+    cluster_skill_demand,
+    explain_match,
+    flag_inconsistent_assessment,
+    generate_mcq_stub,
+    rag_answer,
+    rank_applicants,
+    read_upload_bytes,
+    score_written_answer,
+    summarize_text,
+    transliterate_terms,
+)
+from ayush_ontology import CANONICAL_SKILLS as AYUSH_SKILLS
 
 load_dotenv()
 
@@ -22,9 +37,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
+_cors = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174,http://localhost:5000",
+)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("BACKEND_URL", "http://localhost:5000")],
+    allow_origins=[o.strip() for o in _cors.split(",") if o.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -117,6 +136,55 @@ class StudentProfileMatchRequest(BaseModel):
     student_profile: str
     opportunity_descriptions: List[Dict[str, str]]  # [{id, description}]
     top_k: Optional[int] = 10
+
+
+class ExplainMatchRequest(BaseModel):
+    title: Optional[str] = ""
+    student_skills: List[Dict[str, Any]]
+    required_skills: List[Dict[str, Any]]
+
+
+class RankApplicantsRequest(BaseModel):
+    posting: Dict[str, Any]
+    applicants: List[Dict[str, Any]]
+
+
+class WrittenScoreRequest(BaseModel):
+    student_answer: str
+    model_answer: str
+    keywords: Optional[List[str]] = None
+
+
+class AssessmentFlagRequest(BaseModel):
+    answers: List[Dict[str, Any]]
+
+
+class McqDraftRequest(BaseModel):
+    subject: str
+    source_note: str
+
+
+class ChatRequest(BaseModel):
+    question: str
+    extra_chunks: Optional[List[Dict[str, str]]] = None
+
+
+class TransliterateRequest(BaseModel):
+    text: str
+
+
+class SummarizeRequest(BaseModel):
+    text: str
+    max_sentences: Optional[int] = 4
+
+
+class DemandRequest(BaseModel):
+    postings: List[Dict[str, Any]]
+    k: Optional[int] = 4
+
+
+class ResearchRequest(BaseModel):
+    text: str
 
 
 # ─── Skill Gap Scoring Logic (mirrors Node.js scoring.ts) ────────────────────
@@ -214,7 +282,7 @@ KNOWN_SKILLS = [
     "Machine Learning", "Deep Learning", "NLP", "Computer Vision", "TensorFlow", "PyTorch",
     "Scikit-learn", "NumPy", "Pandas", "SQL", "GraphQL", "REST", "Microservices",
     "Linux", "Bash", "Agile", "Scrum", "CI/CD", "DevOps", "Terraform",
-]
+] + AYUSH_SKILLS
 
 
 def normalize_skill(raw: str) -> str:
@@ -384,65 +452,12 @@ async def extract_resume_skills(file: UploadFile = File(...), use_semantic: bool
         confidence_threshold: Minimum confidence for semantic matches (default: 0.65)
     """
     content = await file.read()
-    text = ""
-
     try:
-        filename = file.filename or ""
-        if filename.lower().endswith(".pdf"):
-            try:
-                import PyPDF2
-                reader = PyPDF2.PdfReader(io.BytesIO(content))
-                text = " ".join(page.extract_text() or "" for page in reader.pages)
-            except Exception:
-                text = content.decode("utf-8", errors="ignore")
-        elif filename.lower().endswith(".docx"):
-            try:
-                import docx
-                doc = docx.Document(io.BytesIO(content))
-                text = " ".join(p.text for p in doc.paragraphs)
-            except Exception:
-                text = content.decode("utf-8", errors="ignore")
-        else:
-            text = content.decode("utf-8", errors="ignore")
+        text = read_upload_bytes(file.filename or "", content)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to parse file: {str(e)}")
 
-    # Keyword-based extraction (fast, baseline)
-    keyword_skills = extract_skills_from_text(text)
-    
-    result_data = {
-        "extracted_skills": keyword_skills,
-        "count": len(keyword_skills),
-        "method": "keyword"
-    }
-    
-    # Semantic extraction (more accurate, context-aware)
-    if use_semantic:
-        try:
-            embedding_service = get_embedding_service()
-            semantic_results = embedding_service.extract_skills_semantic(
-                text=text,
-                known_skills=KNOWN_SKILLS,
-                threshold=confidence_threshold
-            )
-            
-            # Combine with keyword results
-            semantic_skills = [s["skill"] for s in semantic_results]
-            combined_skills = list(set(keyword_skills + semantic_skills))
-            
-            result_data = {
-                "extracted_skills": combined_skills,
-                "count": len(combined_skills),
-                "method": "semantic+keyword",
-                "semantic_details": semantic_results[:10],  # Top 10 with confidence
-                "keyword_only": keyword_skills,
-                "semantic_only": semantic_skills
-            }
-        except Exception as e:
-            # Fallback to keyword-only if semantic fails
-            result_data["semantic_error"] = str(e)
-            result_data["fallback"] = "keyword_only"
-
+    result_data = analyze_resume(text, use_semantic=use_semantic, threshold=confidence_threshold)
     return ApiResponse(
         success=True,
         message="Skills extracted successfully",
@@ -579,6 +594,75 @@ async def compute_text_similarity(text1: str, text2: str):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Similarity computation failed: {str(e)}")
+
+
+@app.post("/ai/explain-match")
+async def explain_match_endpoint(request: ExplainMatchRequest):
+    data = explain_match(request.student_skills, request.required_skills, request.title or "")
+    return ApiResponse(success=True, message="Match explained", data=data)
+
+
+@app.post("/ai/rank-applicants")
+async def rank_applicants_endpoint(request: RankApplicantsRequest):
+    ranked = rank_applicants(request.posting, request.applicants)
+    return ApiResponse(success=True, message="Applicants ranked", data={"applicants": ranked})
+
+
+@app.post("/ai/score-written")
+async def score_written_endpoint(request: WrittenScoreRequest):
+    data = score_written_answer(request.student_answer, request.model_answer, request.keywords)
+    return ApiResponse(success=True, message="Written answer scored", data=data)
+
+
+@app.post("/ai/assessment-flags")
+async def assessment_flags_endpoint(request: AssessmentFlagRequest):
+    data = flag_inconsistent_assessment(request.answers)
+    return ApiResponse(success=True, message="Assessment flags computed", data=data)
+
+
+@app.post("/ai/draft-mcq")
+async def draft_mcq_endpoint(request: McqDraftRequest):
+    items = generate_mcq_stub(request.subject, request.source_note)
+    return ApiResponse(success=True, message="Draft items — faculty review required", data={"items": items})
+
+
+@app.post("/ai/chat")
+async def chat_endpoint(request: ChatRequest):
+    data = rag_answer(request.question, request.extra_chunks)
+    return ApiResponse(success=True, message="Answered", data=data)
+
+
+@app.post("/ai/transliterate")
+async def transliterate_endpoint(request: TransliterateRequest):
+    data = transliterate_terms(request.text)
+    return ApiResponse(success=True, message="Terms mapped", data=data)
+
+
+@app.post("/ai/summarize")
+async def summarize_endpoint(request: SummarizeRequest):
+    data = summarize_text(request.text, request.max_sentences or 4)
+    return ApiResponse(success=True, message="Summary ready", data=data)
+
+
+@app.post("/ai/extract-certificate-skills")
+async def extract_certificate_skills(file: UploadFile = File(...)):
+    content = await file.read()
+    text = read_upload_bytes(file.filename or "", content)
+    data = analyze_resume(text, use_semantic=True, threshold=0.6)
+    data["document_type"] = "certificate"
+    return ApiResponse(success=True, message="Certificate skills extracted", data=data)
+
+
+@app.post("/ai/skill-demand")
+async def skill_demand_endpoint(request: DemandRequest):
+    data = cluster_skill_demand(request.postings, request.k or 4)
+    return ApiResponse(success=True, message="Demand clustered", data=data)
+
+
+@app.post("/ai/classify-research")
+async def classify_research_endpoint(request: ResearchRequest):
+    data = classify_research(request.text)
+    return ApiResponse(success=True, message="Classified", data=data)
 
 
 if __name__ == "__main__":
