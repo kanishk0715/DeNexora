@@ -17,8 +17,13 @@ import {
   FolderKanban,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+<<<<<<< HEAD
 import { Logo, ROLE_LABEL } from '../Logo';
 import { TirangaBar } from './TirangaBar';
+=======
+import { ROLE_LABEL } from '../Logo';
+import { IndiaAppBar, MinistryLogo } from '../brand/IndiaMark';
+>>>>>>> b69cef02f601d867bbfadd69ad5cc637c45bbf84
 import { SearchTrigger } from '../CommandPalette';
 import { PageSkeleton } from '../ui/Skeleton';
 import type { User } from '../../types/api';
@@ -84,8 +89,8 @@ export default function AppShell() {
   return (
     <div className="flex min-h-screen bg-cream-100">
       <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
-        <div className="border-b border-slate-100 px-5 py-4">
-          <Logo />
+        <div className="border-b border-slate-100 px-4 py-3">
+          <MinistryLogo className="h-16 w-auto" />
         </div>
         <nav className="flex-1 space-y-0.5 p-3">
           {links.map(item => {
@@ -116,12 +121,17 @@ export default function AppShell() {
             Prototype — sample AYUSH data
           </div>
         )}
+<<<<<<< HEAD
         <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
           <TirangaBar />
           <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-8">
           <div className="lg:hidden">
             <Logo compact />
           </div>
+=======
+        <IndiaAppBar innerClassName="px-4 lg:px-8">
+            <MinistryLogo className="h-14 w-auto sm:h-16" />
+>>>>>>> b69cef02f601d867bbfadd69ad5cc637c45bbf84
           <SearchTrigger />
           <p className="hidden text-sm text-ink-500 lg:block xl:hidden">Skill mapping · internships</p>
           <div className="relative ml-auto flex items-center gap-2">
@@ -176,8 +186,12 @@ export default function AppShell() {
               <LogOut size={18} />
             </button>
           </div>
+<<<<<<< HEAD
           </div>
         </header>
+=======
+        </IndiaAppBar>
+>>>>>>> b69cef02f601d867bbfadd69ad5cc637c45bbf84
 
         <main className="flex-1 px-4 py-8 pb-24 lg:px-10 lg:pb-8">
           <AnimatePresence mode="wait">

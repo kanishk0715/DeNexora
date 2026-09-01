@@ -22,21 +22,7 @@ import { COPY, PARTNERS } from '../i18n/public';
 
 const FEATURE_ICONS = [GraduationCap, Building2, Brain, Briefcase, BarChart3];
 
-const DEMO_ROLES: { role: User['role']; label: string; hint: string }[] = [
-  { role: 'student', label: 'Student', hint: 'Match internships and track applications' },
-  { role: 'academician', label: 'Faculty', hint: 'FDP, internships and research collabs' },
-  { role: 'industry', label: 'Hospital', hint: 'Post requirements and rank applicants' },
-  { role: 'institution', label: 'Institute', hint: 'Verify students and view placements' },
-  { role: 'admin', label: 'Ministry of AYUSH', hint: 'National skill and placement insights' },
-];
-
-const ROLE_HI: Record<User['role'], { label: string; hint: string }> = {
-  student: { label: 'विद्यार्थी', hint: 'इंटर्नशिप मैच करें और आवेदन ट्रैक करें' },
-  academician: { label: 'संकाय', hint: 'एफडीपी, इंटर्नशिप और शोध सहयोग' },
-  industry: { label: 'अस्पताल', hint: 'आवश्यकताएँ पोस्ट करें और आवेदक रैंक करें' },
-  institution: { label: 'संस्थान', hint: 'विद्यार्थी सत्यापित करें और प्लेसमेंट देखें' },
-  admin: { label: 'आयुष मंत्रालय', hint: 'राष्ट्रीय स्किल और प्लेसमेंट अंतर्दृष्टि' },
-};
+const DEMO_ROLES: User['role'][] = ['student', 'academician', 'industry', 'institution', 'admin'];
 
 const QUESTIONS: Record<string, { id: string; label: string; options: string[] }[]> = {
   student: [
@@ -84,8 +70,7 @@ export default function LandingPage() {
 
   const questions = role ? QUESTIONS[role] ?? [] : [];
   const complete = questions.length > 0 && questions.every(q => answers[q.id]);
-  const roleMeta = DEMO_ROLES.find(r => r.role === role);
-  const roleLabel = role ? (lang === 'hi' ? ROLE_HI[role].label : roleMeta?.label) : '';
+  const roleLabel = role ? t.roles[role].label : '';
   const audience = t.audience.tabs.find(x => x.id === tab) ?? t.audience.tabs[0];
 
   const reset = () => {
@@ -137,13 +122,13 @@ export default function LandingPage() {
           <div className="grid gap-3">
             {DEMO_ROLES.map(r => (
               <button
-                key={r.role}
+                key={r}
                 type="button"
-                onClick={() => begin(r.role)}
+                onClick={() => begin(r)}
                 className="rounded-xl border border-slate-200 p-4 text-left transition hover:border-forest-400 hover:bg-forest-50"
               >
-                <p className="font-semibold text-ink-900">{lang === 'hi' ? ROLE_HI[r.role].label : r.label}</p>
-                <p className="mt-1 text-sm text-ink-500">{lang === 'hi' ? ROLE_HI[r.role].hint : r.hint}</p>
+                <p className="font-semibold text-ink-900">{t.roles[r].label}</p>
+                <p className="mt-1 text-sm text-ink-500">{t.roles[r].hint}</p>
               </button>
             ))}
           </div>
@@ -447,9 +432,9 @@ export default function LandingPage() {
             </div>
             <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {DEMO_ROLES.map(r => (
-                <button key={r.role} type="button" onClick={() => begin(r.role)} className="card-hover p-6 text-left">
-                  <p className="text-lg font-bold text-forest-800">{lang === 'hi' ? ROLE_HI[r.role].label : r.label}</p>
-                  <p className="mt-1 text-sm text-ink-500">{lang === 'hi' ? ROLE_HI[r.role].hint : r.hint}</p>
+                <button key={r} type="button" onClick={() => begin(r)} className="card-hover p-6 text-left">
+                  <p className="text-lg font-bold text-forest-800">{t.roles[r].label}</p>
+                  <p className="mt-1 text-sm text-ink-500">{t.roles[r].hint}</p>
                   <p className="mt-4 text-sm font-semibold text-forest-600">{t.workspaces.start}</p>
                 </button>
               ))}

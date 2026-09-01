@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { isLang, langMeta, type Lang } from '../i18n/languages';
 
-export type Lang = 'en' | 'hi';
+export type { Lang };
 
 const STORAGE = 'ayusetu-lang';
 
 interface LocaleContextType {
   lang: Lang;
   setLang: (lang: Lang) => void;
-  toggleLang: () => void;
 }
 
 const LocaleContext = createContext<LocaleContextType | null>(null);
@@ -15,18 +15,18 @@ const LocaleContext = createContext<LocaleContextType | null>(null);
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
     const saved = localStorage.getItem(STORAGE);
-    return saved === 'hi' ? 'hi' : 'en';
+    return isLang(saved) ? saved : 'en';
   });
 
   useEffect(() => {
     localStorage.setItem(STORAGE, lang);
-    document.documentElement.lang = lang === 'hi' ? 'hi' : 'en';
+    const meta = langMeta(lang);
+    document.documentElement.lang = meta.code;
   }, [lang]);
 
   const setLang = (next: Lang) => setLangState(next);
-  const toggleLang = () => setLangState(l => (l === 'en' ? 'hi' : 'en'));
 
-  return <LocaleContext.Provider value={{ lang, setLang, toggleLang }}>{children}</LocaleContext.Provider>;
+  return <LocaleContext.Provider value={{ lang, setLang }}>{children}</LocaleContext.Provider>;
 }
 
 export function useLocale() {
