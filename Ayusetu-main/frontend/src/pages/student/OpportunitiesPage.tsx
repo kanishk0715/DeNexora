@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Bookmark, BookmarkCheck, GitCompare, MapPin, Sparkles } from 'lucide-react';
-import { PageHeader, MatchBar, EmptyState, Modal } from '../../components/ui/Primitives';
+import { PageHeader, MatchBar, EmptyState, Modal, SkillChipPicker } from '../../components/ui/Primitives';
 import { DEMO_OPPORTUNITIES } from '../../data/demo';
 import { api } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 
 const CITIES = ['All', ...Array.from(new Set(DEMO_OPPORTUNITIES.map(o => o.location)))];
+const SKILL_FILTERS = Array.from(new Set(DEMO_OPPORTUNITIES.flatMap(o => o.requiredSkills.map(s => s.name))));
 const SAVED_KEY = 'ayusetu-saved-opps';
 
 function loadSaved(): string[] {
@@ -24,6 +25,7 @@ export default function OpportunitiesPage() {
   const [query, setQuery] = useState('');
   const [type, setType] = useState('all');
   const [city, setCity] = useState('All');
+  const [skills, setSkills] = useState<string[]>([]);
   const [savedOnly, setSavedOnly] = useState(false);
   const [saved, setSaved] = useState<string[]>(loadSaved);
   const [compare, setCompare] = useState<string[]>([]);
@@ -42,10 +44,12 @@ export default function OpportunitiesPage() {
         o.location.toLowerCase().includes(q);
       const t = type === 'all' || o.type === type;
       const c = city === 'All' || o.location === city;
+      const sk =
+        skills.length === 0 || skills.some(name => o.requiredSkills.some(s => s.name === name));
       const s = !savedOnly || saved.includes(o._id);
-      return hit && t && c && s;
+      return hit && t && c && sk && s;
     });
-  }, [query, type, city, savedOnly, saved]);
+  }, [query, type, city, skills, savedOnly, saved]);
 
   const current = DEMO_OPPORTUNITIES.find(o => o._id === selected);
   const pair = DEMO_OPPORTUNITIES.filter(o => compare.includes(o._id));
@@ -96,7 +100,7 @@ export default function OpportunitiesPage() {
       <PageHeader
         kicker="Industry requirement portal"
         title="Internships & placements"
-        subtitle="Filter by city, save openings, or compare two side by side."
+        subtitle="Filter by city and multiple skills, save openings, or compare two side by side."
         actions={
           <button
             type="button"
@@ -121,6 +125,17 @@ export default function OpportunitiesPage() {
             <MapPin size={12} /> {c}
           </button>
         ))}
+      </div>
+      <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-forest-600">Skills — select more than one</p>
+          {skills.length > 0 && (
+            <button type="button" className="text-xs font-semibold text-forest-700 hover:underline" onClick={() => setSkills([])}>
+              Clear skills
+            </button>
+          )}
+        </div>
+        <SkillChipPicker options={SKILL_FILTERS} selected={skills} onChange={setSkills} />
       </div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
         <input className="input" placeholder="Search hospital, skill, city…" value={query} onChange={e => setQuery(e.target.value)} />

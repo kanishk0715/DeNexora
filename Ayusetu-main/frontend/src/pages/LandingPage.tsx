@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutGroup, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ArrowRight,
   BadgeCheck,
@@ -34,14 +34,71 @@ const ROLE_ICONS = {
 
 const FEATURE_ICONS = [GraduationCap, Building2, Brain, Briefcase, BarChart3];
 
-const DEMO_ROLES: User['role'][] = ['student', 'academician', 'industry', 'institution', 'admin'];
+type EntryKind = 'student' | 'partners' | 'admin';
 
-const QUESTIONS: Record<string, { id: string; label: string; options: string[] }[]> = {
+const ENTRY_DEFS: { kind: EntryKind; icon: typeof GraduationCap; role: User['role'] | null }[] = [
+  { kind: 'student', icon: GraduationCap, role: 'student' },
+  { kind: 'partners', icon: Building2, role: null },
+  { kind: 'admin', icon: ShieldCheck, role: 'admin' },
+];
+
+function RoleTiles({
+  labels,
+  startLabel,
+  onPick,
+  selected,
+}: {
+  labels: Record<EntryKind, { label: string; hint: string }>;
+  startLabel: string;
+  onPick: (kind: EntryKind) => void;
+  selected?: EntryKind;
+}) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-3">
+      {ENTRY_DEFS.map(item => {
+        const Icon = item.icon;
+        const copy = labels[item.kind];
+        const on = selected === item.kind;
+        return (
+          <button
+            key={item.kind}
+            type="button"
+            onClick={() => onPick(item.kind)}
+            className={`card-hover group p-6 text-left ${on ? 'border-forest-400 ring-2 ring-forest-600/20' : ''}`}
+          >
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-forest-50 text-forest-700">
+              <Icon size={20} />
+            </span>
+            <p className="mt-4 text-lg font-bold text-forest-800">{copy.label}</p>
+            <p className="mt-1 text-sm text-ink-500">{copy.hint}</p>
+            <p className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-forest-600">
+              {startLabel}
+              <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
+            </p>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+const PARTNER_ROLES: User['role'][] = ['academician', 'industry', 'institution'];
+
+type Gate = 'choose' | 'partner' | 'questions';
+
+type Question = { id: string; label: string; options: string[]; multi?: boolean };
+
+const QUESTIONS: Record<string, Question[]> = {
   student: [
     { id: 'stream', label: 'Which AYUSH stream are you in?', options: ['BAMS', 'BNYS', 'BUMS', 'BSMS', 'BHMS'] },
     { id: 'year', label: 'Which year are you in?', options: ['1st year', '2nd year', '3rd year', 'Final year', 'Internship'] },
     { id: 'goal', label: 'What are you looking for?', options: ['Internship', 'Job / placement', 'Both'] },
-    { id: 'skill', label: 'Which skill is your strongest today?', options: ['Panchakarma', 'Yoga therapy', 'Clinical documentation', 'Pharmacy / dravyaguna'] },
+    {
+      id: 'skill',
+      label: 'Which skills should we map first?',
+      multi: true,
+      options: ['Panchakarma', 'Yoga therapy', 'Clinical documentation', 'Pharmacy / dravyaguna'],
+    },
   ],
   academician: [
     { id: 'post', label: 'What is your primary role?', options: ['Faculty', 'HOD / coordinator', 'Research guide'] },
@@ -52,12 +109,22 @@ const QUESTIONS: Record<string, { id: string; label: string; options: string[] }
   industry: [
     { id: 'org', label: 'What kind of organisation is this?', options: ['AYUSH hospital', 'Wellness centre', 'Research council', 'Pharmacy / manufacturing'] },
     { id: 'need', label: 'What are you hiring for?', options: ['Interns', 'Full-time roles', 'Both'] },
-    { id: 'stream', label: 'Primary stream you need?', options: ['Ayurveda', 'Yoga', 'Unani', 'Siddha', 'Homoeopathy'] },
+    {
+      id: 'stream',
+      label: 'Which streams do you need?',
+      multi: true,
+      options: ['Ayurveda', 'Yoga', 'Unani', 'Siddha', 'Homoeopathy'],
+    },
     { id: 'city', label: 'Primary location?', options: ['Delhi NCR', 'Jaipur', 'Kochi', 'Hyderabad', 'Multi-city'] },
   ],
   institution: [
     { id: 'type', label: 'What kind of institute is this?', options: ['National institute (NIA / AIIA / NIH / NIS / NIUM)', 'State government college', 'Private AYUSH college'] },
-    { id: 'stream', label: 'Primary stream you want to map?', options: ['BAMS', 'BNYS', 'BUMS', 'BSMS', 'BHMS', 'More than one'] },
+    {
+      id: 'stream',
+      label: 'Which streams do you want to map?',
+      multi: true,
+      options: ['BAMS', 'BNYS', 'BUMS', 'BSMS', 'BHMS'],
+    },
     { id: 'goal', label: 'What do you need first?', options: ['Verify student credentials', 'Track internships & placements', 'See skill gaps vs industry'] },
     { id: 'size', label: 'Approx. student strength?', options: ['Under 200', '200–500', '500+'] },
   ],
@@ -69,37 +136,186 @@ const QUESTIONS: Record<string, { id: string; label: string; options: string[] }
   ],
 };
 
+const SKILL_FOLLOWUPS: Record<string, Question[]> = {
+  Panchakarma: [
+    {
+      id: 'sk_panchakarma_hours',
+      label: 'Supervised Panchakarma hours so far?',
+      options: ['Under 50', '50–150', '150+'],
+    },
+    {
+      id: 'sk_panchakarma_proc',
+      label: 'Which procedures have you assisted?',
+      multi: true,
+      options: ['Vamana', 'Virechana', 'Basti', 'Nasya', 'Raktamokshana'],
+    },
+  ],
+  'Yoga therapy': [
+    {
+      id: 'sk_yoga_setting',
+      label: 'Where have you delivered yoga therapy?',
+      options: ['College clinic / OPD', 'NCD / hospital unit', 'Wellness centre', 'Not yet in clinic'],
+    },
+    {
+      id: 'sk_yoga_protocols',
+      label: 'Which therapeutic protocols have you used?',
+      multi: true,
+      options: ['Hypertension', 'Diabetes', 'Low-back pain', 'Stress / anxiety'],
+    },
+  ],
+  'Clinical documentation': [
+    {
+      id: 'sk_docs_items',
+      label: 'What do you document today?',
+      multi: true,
+      options: ['Consent', 'Diagnosis / dosha notes', 'Procedure log', 'Follow-up outcomes'],
+    },
+    {
+      id: 'sk_docs_level',
+      label: 'Comfort with CCRAS-style case records?',
+      options: ['Beginner', 'Need a template', 'I can write independently'],
+    },
+  ],
+  'Pharmacy / dravyaguna': [
+    {
+      id: 'sk_pharm_exposure',
+      label: 'Pharmacy / rasashala exposure?',
+      options: ['Theory only', 'Observed', 'Hands-on dispensing'],
+    },
+    {
+      id: 'sk_pharm_topics',
+      label: 'Which topics should internships test?',
+      multi: true,
+      options: ['Dravya identification', 'Dosage', 'GMP / labelling', 'Formulation'],
+    },
+  ],
+};
+
+function answered(q: Question, answers: Record<string, string | string[]>) {
+  const v = answers[q.id];
+  if (q.multi) return Array.isArray(v) && v.length > 0;
+  return typeof v === 'string' && v.length > 0;
+}
+
+function selectedSkills(answers: Record<string, string | string[]>) {
+  return Array.isArray(answers.skill) ? (answers.skill as string[]) : [];
+}
+
+function skillQuestionsFor(answers: Record<string, string | string[]>) {
+  return selectedSkills(answers).flatMap(skill => SKILL_FOLLOWUPS[skill] ?? []);
+}
+
 export default function LandingPage() {
   const { enterDemo } = useAuth();
   const { lang } = useLocale();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [gate, setGate] = useState<Gate>('choose');
   const [role, setRole] = useState<User['role'] | null>(null);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState('students');
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
+  const [studentPhase, setStudentPhase] = useState<0 | 1>(0);
+  const [audienceKind, setAudienceKind] = useState<EntryKind>('student');
   const [howStep, setHowStep] = useState(0);
   const t = COPY[lang];
 
-  const questions = role ? QUESTIONS[role] ?? [] : [];
-  const complete = questions.length > 0 && questions.every(q => answers[q.id]);
+  const skillQs = role === 'student' ? skillQuestionsFor(answers) : [];
+  const questions =
+    role === 'student'
+      ? studentPhase === 0
+        ? QUESTIONS.student
+        : skillQs
+      : role
+        ? QUESTIONS[role] ?? []
+        : [];
+  const complete = questions.length > 0 && questions.every(q => answered(q, answers));
+  const skillsPicked = selectedSkills(answers);
   const roleLabel = role ? t.roles[role].label : '';
-  const audience = t.audience.tabs.find(x => x.id === tab) ?? t.audience.tabs[0];
+  const partnerCopy = {
+    label: 'Faculty, hospital & institute',
+    hint: 'Teach, hire talent, or verify students on one AYUSH map',
+  };
+  const roleLabels: Record<EntryKind, { label: string; hint: string }> = {
+    student: t.roles.student,
+    partners: partnerCopy,
+    admin: t.roles.admin,
+  };
+  const studentTab = t.audience.tabs[0];
+  const hospitalTab = t.audience.tabs[1];
+  const instituteTab = t.audience.tabs[2];
+  const audienceDetail: Record<EntryKind, { heading: string; points: string[] }> = {
+    student: { heading: studentTab.heading, points: studentTab.points },
+    partners: {
+      heading: 'One map for faculty, hospitals and institutes',
+      points: [...hospitalTab.points, ...instituteTab.points],
+    },
+    admin: {
+      heading: 'National skill and placement insights',
+      points: [
+        'See internships and jobs by state in one pulse',
+        'Track institute onboarding and verified credentials',
+        'Read skill-gap reports for curriculum and policy',
+      ],
+    },
+  };
+  const audience = audienceDetail[audienceKind];
 
   const reset = () => {
     setOpen(false);
+    setGate('choose');
     setRole(null);
     setAnswers({});
+    setStudentPhase(0);
   };
 
   const begin = (next: User['role']) => {
     setRole(next);
     setAnswers({});
+    setStudentPhase(0);
+    setGate('questions');
     setOpen(true);
   };
 
+  const startEntry = (kind: 'student' | 'partners' | 'admin') => {
+    setAnswers({});
+    setStudentPhase(0);
+    setOpen(true);
+    if (kind === 'partners') {
+      setRole(null);
+      setGate('partner');
+      return;
+    }
+    begin(kind === 'student' ? 'student' : 'admin');
+  };
+
+  const modalTitle =
+    gate === 'questions' && role === 'student' && studentPhase === 1
+      ? `Skill questions · ${skillsPicked.join(', ') || 'Student'}`
+      : gate === 'questions' && role
+        ? `${t.modal.questions} · ${roleLabel}`
+        : gate === 'partner'
+          ? partnerCopy.label
+          : t.modal.choose;
+
+  const modalHelp =
+    gate === 'questions' && role === 'student' && studentPhase === 1
+      ? 'These items are based only on the skills you selected. Internships will rank against this map.'
+      : gate === 'questions' && role === 'student'
+        ? 'First your stream and year, then pick every skill you want mapped.'
+        : gate === 'questions'
+          ? t.modal.help
+          : gate === 'partner'
+            ? 'Choose how you work with AYUSH talent.'
+            : t.modal.then;
+
   const finish = () => {
     if (!role || !complete) return;
+    if (role === 'student' && studentPhase === 0) {
+      if (skillQuestionsFor(answers).length > 0) {
+        setStudentPhase(1);
+        return;
+      }
+    }
     sessionStorage.setItem('ayusetu-onboarding', JSON.stringify({ role, answers }));
     enterDemo(role);
     navigate('/dashboard');
@@ -107,6 +323,8 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (new URLSearchParams(location.search).get('start') === '1') {
+      setGate('choose');
+      setStudentPhase(0);
       setRole(null);
       setAnswers({});
       setOpen(true);
@@ -128,12 +346,45 @@ export default function LandingPage() {
         open={open}
         onClose={reset}
         kicker={t.modal.kicker}
-        title={role ? `${t.modal.questions} · ${roleLabel}` : t.modal.choose}
+        title={modalTitle}
+        size={role === 'student' && studentPhase === 1 ? 'lg' : 'md'}
       >
-        <p className="-mt-3 mb-4 text-sm text-ink-500">{role ? t.modal.help : t.modal.then}</p>
-        {!role && (
+        <p className="-mt-3 mb-4 text-sm text-ink-500">{modalHelp}</p>
+        {gate === 'choose' && (
           <div className="grid gap-3">
-            {DEMO_ROLES.map(r => {
+            {(
+              [
+                { kind: 'student' as const, role: 'student' as const, icon: GraduationCap },
+                { kind: 'partners' as const, role: null, icon: Building2 },
+                { kind: 'admin' as const, role: 'admin' as const, icon: ShieldCheck },
+              ]
+            ).map(item => {
+              const Icon = item.icon;
+              const label = item.kind === 'partners' ? partnerCopy.label : t.roles[item.role!].label;
+              const hint = item.kind === 'partners' ? partnerCopy.hint : t.roles[item.role!].hint;
+              return (
+                <button
+                  key={item.kind}
+                  type="button"
+                  onClick={() => startEntry(item.kind)}
+                  className="group flex items-start gap-3 rounded-xl border border-slate-200 p-4 text-left transition hover:border-forest-400 hover:bg-forest-50"
+                >
+                  <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-700 group-hover:bg-white">
+                    <Icon size={18} />
+                  </span>
+                  <span>
+                    <p className="font-semibold text-ink-900">{label}</p>
+                    <p className="mt-1 text-sm text-ink-500">{hint}</p>
+                  </span>
+                  <ArrowRight size={16} className="ml-auto mt-2 shrink-0 text-forest-600 opacity-0 transition group-hover:opacity-100" />
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {gate === 'partner' && (
+          <div className="grid gap-3">
+            {PARTNER_ROLES.map(r => {
               const Icon = ROLE_ICONS[r];
               return (
                 <button
@@ -153,9 +404,19 @@ export default function LandingPage() {
                 </button>
               );
             })}
+            <button
+              type="button"
+              className="btn-secondary mt-1"
+              onClick={() => {
+                setGate('choose');
+                setRole(null);
+              }}
+            >
+              {t.modal.back}
+            </button>
           </div>
         )}
-        {role && (
+        {gate === 'questions' && role && (
           <form
             className="space-y-5"
             onSubmit={e => {
@@ -163,42 +424,114 @@ export default function LandingPage() {
               finish();
             }}
           >
-            {questions.map((q, i) => (
-              <fieldset key={q.id}>
-                <legend className="text-sm font-semibold text-ink-900">
-                  {i + 1}. {q.label}
-                </legend>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {q.options.map(opt => (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => setAnswers(a => ({ ...a, [q.id]: opt }))}
-                      className={`rounded-full border px-3 py-1.5 text-sm transition ${
-                        answers[q.id] === opt
-                          ? 'border-forest-600 bg-forest-600 text-white'
-                          : 'border-slate-200 bg-white text-ink-700 hover:border-forest-300'
-                      }`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-            ))}
+            {role === 'student' && studentPhase === 1
+              ? skillsPicked.map(skill => (
+                  <div key={skill} className="space-y-4 rounded-xl border border-forest-100 bg-forest-50/40 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-forest-700">{skill}</p>
+                    {(SKILL_FOLLOWUPS[skill] ?? []).map((q, i) => {
+                      const value = answers[q.id];
+                      const picked = (opt: string) =>
+                        q.multi ? Array.isArray(value) && value.includes(opt) : value === opt;
+                      return (
+                        <fieldset key={q.id}>
+                          <legend className="text-sm font-semibold text-ink-900">
+                            {i + 1}. {q.label}
+                            {q.multi && <span className="ml-2 font-normal text-ink-500">Select all that apply</span>}
+                          </legend>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {q.options.map(opt => (
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={() =>
+                                  setAnswers(a => {
+                                    if (!q.multi) return { ...a, [q.id]: opt };
+                                    const cur = Array.isArray(a[q.id]) ? [...(a[q.id] as string[])] : [];
+                                    const next = cur.includes(opt) ? cur.filter(x => x !== opt) : [...cur, opt];
+                                    return { ...a, [q.id]: next };
+                                  })
+                                }
+                                className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                                  picked(opt)
+                                    ? 'border-forest-600 bg-forest-600 text-white'
+                                    : 'border-slate-200 bg-white text-ink-700 hover:border-forest-300'
+                                }`}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </fieldset>
+                      );
+                    })}
+                  </div>
+                ))
+              : questions.map((q, i) => {
+                  const value = answers[q.id];
+                  const picked = (opt: string) =>
+                    q.multi ? Array.isArray(value) && value.includes(opt) : value === opt;
+                  return (
+                    <fieldset key={q.id}>
+                      <legend className="text-sm font-semibold text-ink-900">
+                        {i + 1}. {q.label}
+                        {q.multi && <span className="ml-2 font-normal text-ink-500">Select all that apply</span>}
+                      </legend>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {q.options.map(opt => (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() =>
+                              setAnswers(a => {
+                                if (!q.multi) return { ...a, [q.id]: opt };
+                                const cur = Array.isArray(a[q.id]) ? [...(a[q.id] as string[])] : [];
+                                const next = cur.includes(opt) ? cur.filter(x => x !== opt) : [...cur, opt];
+                                const merged = { ...a, [q.id]: next };
+                                if (q.id !== 'skill') return merged;
+                                const keep = new Set(skillQuestionsFor(merged).map(x => x.id));
+                                for (const key of Object.keys(merged)) {
+                                  if (key.startsWith('sk_') && !keep.has(key)) delete merged[key];
+                                }
+                                return merged;
+                              })
+                            }
+                            className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                              picked(opt)
+                                ? 'border-forest-600 bg-forest-600 text-white'
+                                : 'border-slate-200 bg-white text-ink-700 hover:border-forest-300'
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+                  );
+                })}
             <div className="flex gap-2 pt-2">
               <button
                 type="button"
                 className="btn-secondary"
                 onClick={() => {
-                  setRole(null);
+                  if (role === 'student' && studentPhase === 1) {
+                    setStudentPhase(0);
+                    return;
+                  }
                   setAnswers({});
+                  setStudentPhase(0);
+                  if (PARTNER_ROLES.includes(role)) {
+                    setRole(null);
+                    setGate('partner');
+                  } else {
+                    setRole(null);
+                    setGate('choose');
+                  }
                 }}
               >
                 {t.modal.back}
               </button>
               <button type="submit" className="btn-primary flex-1" disabled={!complete}>
-                {t.modal.continue}
+                {role === 'student' && studentPhase === 0 ? 'Continue to skill questions' : t.modal.continue}
               </button>
             </div>
           </form>
@@ -207,8 +540,10 @@ export default function LandingPage() {
 
       <SiteNav
         onGetStarted={() => {
+          setGate('choose');
           setRole(null);
           setAnswers({});
+          setStudentPhase(0);
           setOpen(true);
         }}
       />
@@ -260,6 +595,7 @@ export default function LandingPage() {
                 type="button"
                 className="btn-primary"
                 onClick={() => {
+                  setGate('choose');
                   setRole(null);
                   setAnswers({});
                   setOpen(true);
@@ -288,6 +624,15 @@ export default function LandingPage() {
           >
             <LiveMatchCard />
           </motion.div>
+          </div>
+        </section>
+
+        <section id="roles" className="relative z-[1] mx-auto max-w-6xl scroll-mt-24 px-4 py-12 sm:py-14">
+          <p className="text-center text-xs font-semibold uppercase tracking-wide text-forest-600">{t.modal.kicker}</p>
+          <h2 className="mt-2 text-center font-serif text-2xl font-semibold text-ink-900 sm:text-3xl">{t.modal.choose}</h2>
+          <p className="mx-auto mt-2 max-w-lg text-center text-sm text-ink-500">{t.modal.then}</p>
+          <div className="mt-8">
+            <RoleTiles labels={roleLabels} startLabel={t.workspaces.start} onPick={startEntry} />
           </div>
         </section>
 
@@ -330,30 +675,10 @@ export default function LandingPage() {
               <h2 className="mt-2 font-serif text-2xl font-semibold text-ink-900 sm:text-3xl">{t.audience.title}</h2>
               <p className="mt-2 text-sm text-ink-500">{t.audience.subtitle}</p>
             </div>
-            <LayoutGroup>
-            <div className="mx-auto mt-8 flex max-w-xl justify-center gap-1 rounded-full bg-cream-100 p-1">
-              {t.audience.tabs.map(x => (
-                <button
-                  key={x.id}
-                  type="button"
-                  onClick={() => setTab(x.id)}
-                  className="relative rounded-full px-4 py-2 text-sm font-semibold transition"
-                >
-                  {tab === x.id && (
-                    <motion.span
-                      layoutId="audience-pill"
-                      className="absolute inset-0 rounded-full bg-forest-700 shadow"
-                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                    />
-                  )}
-                  <span className={`relative z-10 ${tab === x.id ? 'text-white' : 'text-ink-700 hover:text-forest-800'}`}>
-                    {x.label}
-                  </span>
-                </button>
-              ))}
+            <div className="mt-8">
+              <RoleTiles labels={roleLabels} startLabel="See how it fits" selected={audienceKind} onPick={setAudienceKind} />
             </div>
-            </LayoutGroup>
-            <motion.div key={audience.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mx-auto mt-8 max-w-2xl card p-8">
+            <motion.div key={audienceKind} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mx-auto mt-8 max-w-2xl card p-8">
               <h3 className="text-lg font-bold text-ink-900">{audience.heading}</h3>
               <ul className="mt-4 space-y-3 text-sm text-ink-700">
                 {audience.points.map(p => (
@@ -363,6 +688,9 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
+              <button type="button" className="btn-primary mt-6" onClick={() => startEntry(audienceKind)}>
+                {t.hero.getStarted} <ArrowRight size={16} />
+              </button>
             </motion.div>
           </div>
         </section>
@@ -478,23 +806,8 @@ export default function LandingPage() {
               <h2 className="font-serif text-2xl font-semibold text-ink-900 sm:text-3xl">{t.workspaces.title}</h2>
               <p className="mt-2 text-sm text-ink-500">{t.workspaces.subtitle}</p>
             </div>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {DEMO_ROLES.map(r => {
-                const Icon = ROLE_ICONS[r];
-                return (
-                <button key={r} type="button" onClick={() => begin(r)} className="card-hover group p-6 text-left">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-forest-50 text-forest-700">
-                    <Icon size={20} />
-                  </span>
-                  <p className="mt-4 text-lg font-bold text-forest-800">{t.roles[r].label}</p>
-                  <p className="mt-1 text-sm text-ink-500">{t.roles[r].hint}</p>
-                  <p className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-forest-600">
-                    {t.workspaces.start}
-                    <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
-                  </p>
-                </button>
-                );
-              })}
+            <div className="mt-10">
+              <RoleTiles labels={roleLabels} startLabel={t.workspaces.start} onPick={startEntry} />
             </div>
           </div>
         </section>

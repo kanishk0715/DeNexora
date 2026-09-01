@@ -10,10 +10,8 @@ describe('App', () => {
 
   it('renders role entry cards', () => {
     render(<App />);
-    expect(screen.getByText('Student')).toBeInTheDocument();
-    expect(screen.getByText('Faculty')).toBeInTheDocument();
-    expect(screen.getByText('Hospital')).toBeInTheDocument();
-    expect(screen.getByText('Institute')).toBeInTheDocument();
+    expect(screen.getAllByText('Student').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Faculty, hospital & institute').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Ministry of AYUSH').length).toBeGreaterThan(0);
   });
 

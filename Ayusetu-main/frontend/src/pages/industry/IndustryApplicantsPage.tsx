@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { PageHeader, StatusBadge, MatchBar, Avatar } from '../../components/ui/Primitives';
+import { PageHeader, StatusBadge, MatchBar, Avatar, SkillChipPicker } from '../../components/ui/Primitives';
 import { SlideOver } from '../../components/ui/SlideOver';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { DEMO_INDUSTRY_APPLICANTS } from '../../data/demo';
@@ -21,11 +21,17 @@ export default function IndustryApplicantsPage() {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('all');
   const [college, setCollege] = useState('All');
+  const [skills, setSkills] = useState<string[]>([]);
   const [rows, setRows] = useState(DEMO_INDUSTRY_APPLICANTS);
   const [selected, setSelected] = useState<Applicant | null>(null);
   const [passWho, setPassWho] = useState<Applicant | null>(null);
 
   const institutes = useMemo(() => ['All', ...Array.from(new Set(DEMO_INDUSTRY_APPLICANTS.map(a => a.college)))], []);
+
+  const skillOptions = useMemo(
+    () => Array.from(new Set(DEMO_INDUSTRY_APPLICANTS.flatMap(a => a.skills))),
+    [],
+  );
 
   const list = useMemo(() => {
     const q = query.toLowerCase();
@@ -33,9 +39,10 @@ export default function IndustryApplicantsPage() {
       const hit = !q || a.name.toLowerCase().includes(q) || a.skills.some(s => s.toLowerCase().includes(q));
       const st = status === 'all' || a.status === status;
       const c = college === 'All' || a.college === college;
-      return hit && st && c;
+      const sk = skills.length === 0 || skills.some(s => a.skills.includes(s));
+      return hit && st && c && sk;
     });
-  }, [rows, query, status, college]);
+  }, [rows, query, status, college, skills]);
 
   const current = selected ? rows.find(a => a.id === selected.id) ?? selected : null;
 
@@ -78,6 +85,10 @@ export default function IndustryApplicantsPage() {
             {s.label}
           </button>
         ))}
+      </div>
+      <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-forest-600">Filter by skills — select more than one</p>
+        <SkillChipPicker options={skillOptions} selected={skills} onChange={setSkills} />
       </div>
 
       <div className="card overflow-x-auto">

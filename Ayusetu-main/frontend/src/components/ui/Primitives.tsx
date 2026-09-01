@@ -177,6 +177,7 @@ export function SkillChipPicker({
             className={`rounded-full border px-3 py-1.5 text-sm transition ${
               on ? 'border-forest-600 bg-forest-600 text-white' : 'border-slate-200 bg-white text-ink-700 hover:border-forest-300'
             }`}
+            aria-pressed={on}
           >
             {skill}
           </button>

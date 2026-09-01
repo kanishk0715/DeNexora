@@ -145,7 +145,7 @@ export default function IndustryOpportunitiesPage() {
 
         {step === 1 && (
           <div>
-            <p className="mb-3 text-sm text-ink-500">Pick skills from the AYUSH ontology. Students are scored only on tagged skills.</p>
+            <p className="mb-3 text-sm text-ink-500">Tap every skill that applies — you can select more than one. Students are scored only on tagged skills.</p>
             <SkillChipPicker options={SKILL_ONTOLOGY} selected={draft.skills} onChange={skills => setDraft(d => ({ ...d, skills }))} />
             {draft.skills.length > 0 && (
               <p className="mt-3 text-xs font-medium text-forest-700">{draft.skills.length} skill{draft.skills.length === 1 ? '' : 's'} selected</p>
