@@ -23,6 +23,7 @@ import { SiteFooter } from '../components/layout/SiteFooter';
 import { Modal } from '../components/ui/Primitives';
 import { COPY, PARTNERS } from '../i18n/public';
 import { CountUp } from '../components/ui/CountUp';
+import { BAMS_SUBJECTS, ONBOARDING_KEY } from '../data/ayurvedaBank';
 
 const ROLE_ICONS = {
   student: GraduationCap,
@@ -95,9 +96,9 @@ const QUESTIONS: Record<string, Question[]> = {
     { id: 'goal', label: 'What are you looking for?', options: ['Internship', 'Job / placement', 'Both'] },
     {
       id: 'skill',
-      label: 'Which skills should we map first?',
+      label: 'Which BAMS subjects should we assess?',
       multi: true,
-      options: ['Panchakarma', 'Yoga therapy', 'Clinical documentation', 'Pharmacy / dravyaguna'],
+      options: BAMS_SUBJECTS.map(s => s.id),
     },
   ],
   academician: [
@@ -136,73 +137,16 @@ const QUESTIONS: Record<string, Question[]> = {
   ],
 };
 
-const SKILL_FOLLOWUPS: Record<string, Question[]> = {
-  Panchakarma: [
-    {
-      id: 'sk_panchakarma_hours',
-      label: 'Supervised Panchakarma hours so far?',
-      options: ['Under 50', '50–150', '150+'],
-    },
-    {
-      id: 'sk_panchakarma_proc',
-      label: 'Which procedures have you assisted?',
-      multi: true,
-      options: ['Vamana', 'Virechana', 'Basti', 'Nasya', 'Raktamokshana'],
-    },
-  ],
-  'Yoga therapy': [
-    {
-      id: 'sk_yoga_setting',
-      label: 'Where have you delivered yoga therapy?',
-      options: ['College clinic / OPD', 'NCD / hospital unit', 'Wellness centre', 'Not yet in clinic'],
-    },
-    {
-      id: 'sk_yoga_protocols',
-      label: 'Which therapeutic protocols have you used?',
-      multi: true,
-      options: ['Hypertension', 'Diabetes', 'Low-back pain', 'Stress / anxiety'],
-    },
-  ],
-  'Clinical documentation': [
-    {
-      id: 'sk_docs_items',
-      label: 'What do you document today?',
-      multi: true,
-      options: ['Consent', 'Diagnosis / dosha notes', 'Procedure log', 'Follow-up outcomes'],
-    },
-    {
-      id: 'sk_docs_level',
-      label: 'Comfort with CCRAS-style case records?',
-      options: ['Beginner', 'Need a template', 'I can write independently'],
-    },
-  ],
-  'Pharmacy / dravyaguna': [
-    {
-      id: 'sk_pharm_exposure',
-      label: 'Pharmacy / rasashala exposure?',
-      options: ['Theory only', 'Observed', 'Hands-on dispensing'],
-    },
-    {
-      id: 'sk_pharm_topics',
-      label: 'Which topics should internships test?',
-      multi: true,
-      options: ['Dravya identification', 'Dosage', 'GMP / labelling', 'Formulation'],
-    },
-  ],
-};
+function studentQuestions(answers: Record<string, string | string[]>): Question[] {
+  const base = QUESTIONS.student.filter(q => q.id !== 'skill');
+  if (answers.stream === 'BAMS') return QUESTIONS.student;
+  return base;
+}
 
 function answered(q: Question, answers: Record<string, string | string[]>) {
   const v = answers[q.id];
   if (q.multi) return Array.isArray(v) && v.length > 0;
   return typeof v === 'string' && v.length > 0;
-}
-
-function selectedSkills(answers: Record<string, string | string[]>) {
-  return Array.isArray(answers.skill) ? (answers.skill as string[]) : [];
-}
-
-function skillQuestionsFor(answers: Record<string, string | string[]>) {
-  return selectedSkills(answers).flatMap(skill => SKILL_FOLLOWUPS[skill] ?? []);
 }
 
 export default function LandingPage() {
@@ -214,22 +158,12 @@ export default function LandingPage() {
   const [gate, setGate] = useState<Gate>('choose');
   const [role, setRole] = useState<User['role'] | null>(null);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
-  const [studentPhase, setStudentPhase] = useState<0 | 1>(0);
   const [audienceKind, setAudienceKind] = useState<EntryKind>('student');
   const [howStep, setHowStep] = useState(0);
   const t = COPY[lang];
 
-  const skillQs = role === 'student' ? skillQuestionsFor(answers) : [];
-  const questions =
-    role === 'student'
-      ? studentPhase === 0
-        ? QUESTIONS.student
-        : skillQs
-      : role
-        ? QUESTIONS[role] ?? []
-        : [];
+  const questions = role === 'student' ? studentQuestions(answers) : role ? QUESTIONS[role] ?? [] : [];
   const complete = questions.length > 0 && questions.every(q => answered(q, answers));
-  const skillsPicked = selectedSkills(answers);
   const roleLabel = role ? t.roles[role].label : '';
   const partnerCopy = {
     label: 'Faculty, hospital & institute',
@@ -265,20 +199,17 @@ export default function LandingPage() {
     setGate('choose');
     setRole(null);
     setAnswers({});
-    setStudentPhase(0);
   };
 
   const begin = (next: User['role']) => {
     setRole(next);
     setAnswers({});
-    setStudentPhase(0);
     setGate('questions');
     setOpen(true);
   };
 
   const startEntry = (kind: 'student' | 'partners' | 'admin') => {
     setAnswers({});
-    setStudentPhase(0);
     setOpen(true);
     if (kind === 'partners') {
       setRole(null);
@@ -288,43 +219,30 @@ export default function LandingPage() {
     begin(kind === 'student' ? 'student' : 'admin');
   };
 
-  const modalTitle =
-    gate === 'questions' && role === 'student' && studentPhase === 1
-      ? `Skill questions · ${skillsPicked.join(', ') || 'Student'}`
-      : gate === 'questions' && role
-        ? `${t.modal.questions} · ${roleLabel}`
-        : gate === 'partner'
-          ? partnerCopy.label
-          : t.modal.choose;
+  const modalTitle = gate === 'questions' && role ? `${t.modal.questions} · ${roleLabel}` : gate === 'partner' ? partnerCopy.label : t.modal.choose;
 
   const modalHelp =
-    gate === 'questions' && role === 'student' && studentPhase === 1
-      ? 'These items are based only on the skills you selected. Internships will rank against this map.'
-      : gate === 'questions' && role === 'student'
-        ? 'First your stream and year, then pick every skill you want mapped.'
-        : gate === 'questions'
-          ? t.modal.help
-          : gate === 'partner'
-            ? 'Choose how you work with AYUSH talent.'
-            : t.modal.then;
+    gate === 'questions' && role === 'student'
+      ? answers.stream === 'BAMS'
+        ? 'Pick BAMS subjects. Assessment will only ask the papers you select.'
+        : 'Choose your stream first. BAMS unlocks subject papers for assessment.'
+      : gate === 'questions'
+        ? t.modal.help
+        : gate === 'partner'
+          ? 'Choose how you work with AYUSH talent.'
+          : t.modal.then;
 
   const finish = () => {
     if (!role || !complete) return;
-    if (role === 'student' && studentPhase === 0) {
-      if (skillQuestionsFor(answers).length > 0) {
-        setStudentPhase(1);
-        return;
-      }
-    }
-    sessionStorage.setItem('ayusetu-onboarding', JSON.stringify({ role, answers }));
+    sessionStorage.setItem(ONBOARDING_KEY, JSON.stringify({ role, answers }));
     enterDemo(role);
-    navigate('/dashboard');
+    if (role === 'student' && answers.stream === 'BAMS') navigate('/assessment');
+    else navigate('/dashboard');
   };
 
   useEffect(() => {
     if (new URLSearchParams(location.search).get('start') === '1') {
       setGate('choose');
-      setStudentPhase(0);
       setRole(null);
       setAnswers({});
       setOpen(true);
@@ -347,7 +265,7 @@ export default function LandingPage() {
         onClose={reset}
         kicker={t.modal.kicker}
         title={modalTitle}
-        size={role === 'student' && studentPhase === 1 ? 'lg' : 'md'}
+        size="md"
       >
         <p className="-mt-3 mb-4 text-sm text-ink-500">{modalHelp}</p>
         {gate === 'choose' && (
@@ -424,84 +342,52 @@ export default function LandingPage() {
               finish();
             }}
           >
-            {role === 'student' && studentPhase === 1
-              ? skillsPicked.map(skill => (
-                  <div key={skill} className="space-y-4 rounded-xl border border-forest-100 bg-forest-50/40 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-forest-700">{skill}</p>
-                    {(SKILL_FOLLOWUPS[skill] ?? []).map((q, i) => {
-                      const value = answers[q.id];
-                      const picked = (opt: string) =>
-                        q.multi ? Array.isArray(value) && value.includes(opt) : value === opt;
-                      return (
-                        <fieldset key={q.id}>
-                          <legend className="text-sm font-semibold text-ink-900">
-                            {i + 1}. {q.label}
-                            {q.multi && <span className="ml-2 font-normal text-ink-500">Select all that apply</span>}
-                          </legend>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {q.options.map(opt => (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() =>
-                                  setAnswers(a => {
-                                    if (!q.multi) return { ...a, [q.id]: opt };
-                                    const cur = Array.isArray(a[q.id]) ? [...(a[q.id] as string[])] : [];
-                                    const next = cur.includes(opt) ? cur.filter(x => x !== opt) : [...cur, opt];
-                                    return { ...a, [q.id]: next };
-                                  })
-                                }
-                                className={`rounded-full border px-3 py-1.5 text-sm transition ${
-                                  picked(opt)
-                                    ? 'border-forest-600 bg-forest-600 text-white'
-                                    : 'border-slate-200 bg-white text-ink-700 hover:border-forest-300'
-                                }`}
-                              >
-                                {opt}
-                              </button>
-                            ))}
-                          </div>
-                        </fieldset>
-                      );
-                    })}
-                  </div>
-                ))
-              : questions.map((q, i) => {
+            {questions.map((q, i) => {
                   const value = answers[q.id];
                   const picked = (opt: string) =>
                     q.multi ? Array.isArray(value) && value.includes(opt) : value === opt;
+                  const opts =
+                    q.id === 'skill'
+                      ? BAMS_SUBJECTS.map(s => ({ id: s.id, label: s.label, hint: s.hint }))
+                      : q.options.map(opt => ({ id: opt, label: opt, hint: '' }));
                   return (
                     <fieldset key={q.id}>
                       <legend className="text-sm font-semibold text-ink-900">
                         {i + 1}. {q.label}
                         {q.multi && <span className="ml-2 font-normal text-ink-500">Select all that apply</span>}
                       </legend>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {q.options.map(opt => (
+                      <div className={`mt-2 flex flex-wrap gap-2 ${q.id === 'skill' ? 'flex-col sm:flex-row' : ''}`}>
+                        {opts.map(opt => (
                           <button
-                            key={opt}
+                            key={opt.id}
                             type="button"
                             onClick={() =>
                               setAnswers(a => {
-                                if (!q.multi) return { ...a, [q.id]: opt };
-                                const cur = Array.isArray(a[q.id]) ? [...(a[q.id] as string[])] : [];
-                                const next = cur.includes(opt) ? cur.filter(x => x !== opt) : [...cur, opt];
-                                const merged = { ...a, [q.id]: next };
-                                if (q.id !== 'skill') return merged;
-                                const keep = new Set(skillQuestionsFor(merged).map(x => x.id));
-                                for (const key of Object.keys(merged)) {
-                                  if (key.startsWith('sk_') && !keep.has(key)) delete merged[key];
+                                if (q.id === 'stream') {
+                                  const next: Record<string, string | string[]> = { ...a, stream: opt.id };
+                                  if (opt.id !== 'BAMS') delete next.skill;
+                                  return next;
                                 }
-                                return merged;
+                                if (!q.multi) return { ...a, [q.id]: opt.id };
+                                const cur = Array.isArray(a[q.id]) ? [...(a[q.id] as string[])] : [];
+                                const next = cur.includes(opt.id) ? cur.filter(x => x !== opt.id) : [...cur, opt.id];
+                                return { ...a, [q.id]: next };
                               })
                             }
-                            className={`rounded-full border px-3 py-1.5 text-sm transition ${
-                              picked(opt)
+                            className={`rounded-xl border px-3 py-1.5 text-left text-sm transition ${
+                              q.id === 'skill' ? 'sm:w-[calc(50%-0.25rem)]' : 'rounded-full'
+                            } ${
+                              picked(opt.id)
                                 ? 'border-forest-600 bg-forest-600 text-white'
                                 : 'border-slate-200 bg-white text-ink-700 hover:border-forest-300'
                             }`}
                           >
-                            {opt}
+                            <span className="font-medium">{opt.label}</span>
+                            {opt.hint ? (
+                              <span className={`mt-0.5 block text-[11px] ${picked(opt.id) ? 'text-white/80' : 'text-ink-500'}`}>
+                                {opt.hint}
+                              </span>
+                            ) : null}
                           </button>
                         ))}
                       </div>
@@ -513,12 +399,7 @@ export default function LandingPage() {
                 type="button"
                 className="btn-secondary"
                 onClick={() => {
-                  if (role === 'student' && studentPhase === 1) {
-                    setStudentPhase(0);
-                    return;
-                  }
                   setAnswers({});
-                  setStudentPhase(0);
                   if (PARTNER_ROLES.includes(role)) {
                     setRole(null);
                     setGate('partner');
@@ -531,7 +412,7 @@ export default function LandingPage() {
                 {t.modal.back}
               </button>
               <button type="submit" className="btn-primary flex-1" disabled={!complete}>
-                {role === 'student' && studentPhase === 0 ? 'Continue to skill questions' : t.modal.continue}
+                {role === 'student' && answers.stream === 'BAMS' ? 'Start subject assessment' : t.modal.continue}
               </button>
             </div>
           </form>
@@ -543,7 +424,6 @@ export default function LandingPage() {
           setGate('choose');
           setRole(null);
           setAnswers({});
-          setStudentPhase(0);
           setOpen(true);
         }}
       />

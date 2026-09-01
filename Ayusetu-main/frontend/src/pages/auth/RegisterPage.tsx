@@ -1,23 +1,45 @@
-import { useState, FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState, FormEvent } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthFrame } from '../../components/layout/AuthFrame';
 
-const ROLES = [
+const ALL_ROLES = [
   { value: 'student', label: 'AYUSH student' },
   { value: 'academician', label: 'Faculty / academician' },
   { value: 'industry', label: 'Hospital / industry partner' },
   { value: 'institution', label: 'Institution admin' },
+  { value: 'admin', label: 'Ministry of AYUSH' },
 ];
+
+function rolesForGate(gate: string | null) {
+  if (gate === 'student') return ALL_ROLES.filter(r => r.value === 'student');
+  if (gate === 'partners') return ALL_ROLES.filter(r => ['academician', 'industry', 'institution'].includes(r.value));
+  if (gate === 'ministry') return ALL_ROLES.filter(r => r.value === 'admin');
+  return ALL_ROLES.filter(r => r.value !== 'admin');
+}
+
+function loginForGate(gate: string | null) {
+  if (gate === 'student') return '/login/student';
+  if (gate === 'partners') return '/login/partners';
+  if (gate === 'ministry') return '/login/ministry';
+  return '/login';
+}
 
 export default function RegisterPage() {
   const { enterDemo } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'student' });
+  const [params] = useSearchParams();
+  const gate = params.get('role');
+  const roles = rolesForGate(gate);
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: roles[0]?.value || 'student' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setForm(f => ({ ...f, role: roles[0]?.value || 'student' }));
+  }, [gate]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -75,7 +97,7 @@ export default function RegisterPage() {
                   value={form.role}
                   onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
                 >
-                  {ROLES.map(r => (
+                  {roles.map(r => (
                     <option key={r.value} value={r.value}>
                       {r.label}
                     </option>
@@ -93,7 +115,7 @@ export default function RegisterPage() {
 
             <p className="mt-6 text-center text-sm text-ink-500">
               Already registered?{' '}
-              <Link to="/login" className="font-semibold text-forest-700 hover:underline">
+              <Link to={loginForGate(gate)} className="font-semibold text-forest-700 hover:underline">
                 Sign in
               </Link>
             </p>

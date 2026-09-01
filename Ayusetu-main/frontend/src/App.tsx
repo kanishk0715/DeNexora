@@ -8,6 +8,7 @@ import AssessmentPage from './pages/student/AssessmentPage';
 import SkillsPage from './pages/student/SkillsPage';
 import OpportunitiesPage from './pages/student/OpportunitiesPage';
 import ApplicationsPage from './pages/student/ApplicationsPage';
+import ResumeAnalyzerPage from './pages/student/ResumeAnalyzerPage';
 import PortfolioPage from './pages/student/PortfolioPage';
 import IndustryOpportunitiesPage from './pages/industry/IndustryOpportunitiesPage';
 import IndustryApplicantsPage from './pages/industry/IndustryApplicantsPage';
@@ -21,6 +22,7 @@ import AdminVerificationsPage from './pages/admin/AdminVerificationsPage';
 import FacultyHubPage from './pages/faculty/FacultyHubPage';
 import PublicPortfolioPage from './pages/PublicPortfolioPage';
 import LoginPage from './pages/auth/LoginPage';
+import RoleLoginPage from './pages/auth/RoleLoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import AboutPage from './pages/AboutPage';
 import { LocaleProvider } from './contexts/LocaleContext';
@@ -39,6 +41,7 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/login/:gate" element={<RoleLoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/p/:slug" element={<PublicPortfolioPage />} />
 
@@ -81,6 +84,14 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={['student', 'academician']}>
                   <ApplicationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/resume"
+              element={
+                <ProtectedRoute allowedRoles={['student']}>
+                  <ResumeAnalyzerPage />
                 </ProtectedRoute>
               }
             />

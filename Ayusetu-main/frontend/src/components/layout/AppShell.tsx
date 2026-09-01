@@ -14,7 +14,11 @@ import {
   FileCheck,
   GraduationCap,
   Building2,
+  FileScan,
   FolderKanban,
+  Home,
+  Menu,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ROLE_LABEL } from '../Logo';
@@ -23,16 +27,21 @@ import { SearchTrigger } from '../CommandPalette';
 import { PageSkeleton } from '../ui/Skeleton';
 import type { User } from '../../types/api';
 
+const HOME = { to: '/', label: 'Home', icon: Home };
+
 const NAV: Record<User['role'], { to: string; label: string; icon: typeof LayoutDashboard }[]> = {
   student: [
+    HOME,
     { to: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { to: '/assessment', label: 'Assessment', icon: ClipboardList },
+    { to: '/resume', label: 'Resume analyzer', icon: FileScan },
     { to: '/skills', label: 'Skill map', icon: BookOpen },
     { to: '/opportunities', label: 'Internships', icon: Briefcase },
     { to: '/applications', label: 'Tracker', icon: FolderKanban },
     { to: '/portfolio', label: 'Profile', icon: FileCheck },
   ],
   academician: [
+    HOME,
     { to: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { to: '/faculty/internships', label: 'Internships', icon: Briefcase },
     { to: '/faculty/fdp', label: 'FDP', icon: GraduationCap },
@@ -40,18 +49,21 @@ const NAV: Record<User['role'], { to: string; label: string; icon: typeof Layout
     { to: '/applications', label: 'Applications', icon: FolderKanban },
   ],
   industry: [
+    HOME,
     { to: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { to: '/industry/opportunities', label: 'Postings', icon: Briefcase },
     { to: '/industry/applications', label: 'Applicants', icon: Users },
     { to: '/industry/programs', label: 'Training', icon: GraduationCap },
   ],
   institution: [
+    HOME,
     { to: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { to: '/institution/students', label: 'Students', icon: Users },
     { to: '/institution/placements', label: 'Placements', icon: Briefcase },
     { to: '/institution/analytics', label: 'Analytics', icon: BarChart3 },
   ],
   admin: [
+    HOME,
     { to: '/dashboard', label: 'National', icon: LayoutDashboard },
     { to: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     { to: '/admin/verifications', label: 'Verify', icon: FileCheck },
@@ -71,9 +83,11 @@ export default function AppShell() {
   const location = useLocation();
   const [bell, setBell] = useState(false);
   const [ready, setReady] = useState(false);
+  const [drawer, setDrawer] = useState(false);
 
   useEffect(() => {
     setReady(false);
+    setDrawer(false);
     const t = window.setTimeout(() => setReady(true), 380);
     return () => window.clearTimeout(t);
   }, [location.pathname]);
@@ -81,45 +95,75 @@ export default function AppShell() {
   if (!user) return null;
   const links = NAV[user.role];
 
+  const drawerInner = (
+    <>
+      <div className="shrink-0 border-b border-slate-100 bg-gradient-to-b from-forest-50/70 to-white px-4 py-3">
+        <MinistryLogo className="h-16 w-auto" />
+      </div>
+      <nav className="min-h-0 flex-1 space-y-0.5 overflow-hidden p-3">
+        {links.map(item => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/' || item.to === '/dashboard'}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                  isActive
+                    ? 'bg-forest-50 text-forest-800 shadow-sm ring-1 ring-forest-100'
+                    : 'text-ink-500 hover:bg-cream-100 hover:text-ink-900'
+                }`
+              }
+            >
+              <Icon size={18} />
+              {item.label}
+            </NavLink>
+          );
+        })}
+      </nav>
+      <p className="shrink-0 border-t border-slate-100 px-5 py-4 text-xs text-ink-500">AYUSH pathways</p>
+    </>
+  );
+
   return (
-    <div className="flex min-h-screen bg-cream-100">
-      <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
-        <div className="border-b border-slate-100 bg-gradient-to-b from-forest-50/70 to-white px-4 py-3">
-          <MinistryLogo className="h-16 w-auto" />
-        </div>
-        <nav className="flex-1 space-y-0.5 p-3">
-          {links.map(item => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === '/dashboard'}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
-                    isActive
-                      ? 'bg-forest-50 text-forest-800 shadow-sm ring-1 ring-forest-100'
-                      : 'text-ink-500 hover:bg-cream-100 hover:text-ink-900'
-                  }`
-                }
-              >
-                <Icon size={18} />
-                {item.label}
-              </NavLink>
-            );
-          })}
-        </nav>
-        <p className="border-t border-slate-100 px-5 py-4 text-xs text-ink-500">AYUSH pathways</p>
+    <div className="flex h-dvh max-h-dvh overflow-hidden overscroll-none bg-cream-100">
+      <aside className="hidden h-full w-60 shrink-0 overflow-hidden border-r border-slate-200 bg-white md:flex md:flex-col">
+        {drawerInner}
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      {drawer && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button type="button" className="absolute inset-0 bg-slate-900/40" aria-label="Close menu" onClick={() => setDrawer(false)} />
+          <aside className="relative flex h-full w-60 flex-col overflow-hidden bg-white shadow-xl">
+            <button
+              type="button"
+              className="absolute right-2 top-2 rounded-lg p-2 text-ink-500 hover:bg-cream-100"
+              aria-label="Close menu"
+              onClick={() => setDrawer(false)}
+            >
+              <X size={18} />
+            </button>
+            {drawerInner}
+          </aside>
+        </div>
+      )}
+
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         {isDemo && (
-          <div className="no-print bg-saffron-50 px-4 py-1.5 text-center text-xs font-medium text-saffron-700">
+          <div className="no-print shrink-0 bg-saffron-50 px-4 py-1.5 text-center text-xs font-medium text-saffron-700">
             Prototype — sample AYUSH data
           </div>
         )}
         <IndiaAppBar innerClassName="px-4 lg:px-8">
-            <MinistryLogo className="h-14 w-auto sm:h-16" />
+          <button
+            type="button"
+            className="rounded-lg p-2 text-ink-700 hover:bg-cream-100 md:hidden"
+            aria-label="Open menu"
+            onClick={() => setDrawer(true)}
+          >
+            <Menu size={18} />
+          </button>
           <SearchTrigger />
           <p className="hidden text-sm text-ink-500 lg:block xl:hidden">Skill mapping · internships</p>
           <div className="relative ml-auto flex items-center gap-2">
@@ -176,7 +220,7 @@ export default function AppShell() {
           </div>
         </IndiaAppBar>
 
-        <main className="flex-1 px-4 py-8 pb-24 lg:px-10 lg:pb-8">
+        <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 py-8 pb-24 lg:px-10 lg:pb-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -193,7 +237,7 @@ export default function AppShell() {
       </div>
 
       <nav
-        className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+        className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
         aria-label="Workspace"
       >
         <div className="flex">
@@ -203,7 +247,7 @@ export default function AppShell() {
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.to === '/dashboard'}
+                end={item.to === '/' || item.to === '/dashboard'}
                 className={({ isActive }) =>
                   `flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-medium ${
                     isActive ? 'text-forest-800' : 'text-ink-500'

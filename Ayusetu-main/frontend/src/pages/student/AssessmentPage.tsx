@@ -1,27 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Clock, Keyboard } from 'lucide-react';
-import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer } from 'recharts';
 import { PageHeader } from '../../components/ui/Primitives';
 import { ReadinessRing } from '../../components/ui/ReadinessRing';
-import { QuestionArt } from '../../components/assessment/QuestionArt';
-import { ASSESSMENT_QUESTIONS, DEMO_SKILLS } from '../../data/demo';
 import { useToast } from '../../contexts/ToastContext';
-
-const TOTAL = 8 * 60;
-
-const RESULTS = [
-  { n: 'Panchakarma protocols', s: 78, gap: false },
-  { n: 'Yoga therapy', s: 88, gap: false },
-  { n: 'Clinical documentation', s: 54, gap: true },
-];
-
-const RADAR = DEMO_SKILLS.slice(0, 5).map(s => ({
-  skill: s.name.replace(' protocols', '').replace('Clinical ', ''),
-  you: s.score,
-  bench: s.benchmark,
-}));
+import { loadOnboarding, questionsForSkills, type BankQuestion } from '../../data/ayurvedaBank';
 
 function formatTime(s: number) {
   const m = Math.floor(s / 60);
@@ -29,28 +13,57 @@ function formatTime(s: number) {
   return `${m}:${r.toString().padStart(2, '0')}`;
 }
 
+function paperFromOnboarding(): { skills: string[]; stream: string; questions: BankQuestion[] } {
+  const data = loadOnboarding();
+  const answers = data.answers ?? {};
+  const stream = typeof answers.stream === 'string' ? answers.stream : '';
+  const skills = Array.isArray(answers.skill) ? answers.skill : [];
+  return { skills, stream, questions: questionsForSkills(skills) };
+}
+
 export default function AssessmentPage() {
   const { toast } = useToast();
+  const paper = useMemo(() => paperFromOnboarding(), []);
+  const questions = paper.questions;
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [done, setDone] = useState(false);
-  const [seconds, setSeconds] = useState(TOTAL);
-  const q = ASSESSMENT_QUESTIONS[step];
-  const pct = ((step + (answers[q?.id] !== undefined ? 0.35 : 0)) / ASSESSMENT_QUESTIONS.length) * 100;
+  const [seconds, setSeconds] = useState(180);
+  const [locked, setLocked] = useState(false);
+  const lockRef = useRef(false);
+  const q = questions[step];
+  const pct = questions.length ? ((step + (answers[q?.id] !== undefined ? 0.35 : 0)) / questions.length) * 100 : 0;
   const urgent = seconds <= 60;
 
-  useEffect(() => {
-    if (done) return;
-    const id = window.setInterval(() => setSeconds(s => Math.max(0, s - 1)), 1000);
-    return () => window.clearInterval(id);
-  }, [done]);
+  const choose = (idx: number) => {
+    if (!q || lockRef.current || done) return;
+    lockRef.current = true;
+    setLocked(true);
+    setAnswers(a => ({ ...a, [q.id]: idx }));
+    window.setTimeout(() => {
+      if (step === questions.length - 1) {
+        setDone(true);
+        toast('success', 'Assessment scored. Skill map updated.');
+      } else {
+        setStep(s => s + 1);
+        lockRef.current = false;
+        setLocked(false);
+      }
+    }, 280);
+  };
 
   useEffect(() => {
-    if (seconds === 0 && !done) {
+    if (done || questions.length === 0) return;
+    const id = window.setInterval(() => setSeconds(s => Math.max(0, s - 1)), 1000);
+    return () => window.clearInterval(id);
+  }, [done, questions.length]);
+
+  useEffect(() => {
+    if (seconds === 0 && !done && questions.length > 0) {
       setDone(true);
       toast('info', 'Time is up — scoring from answers so far.');
     }
-  }, [seconds, done, toast]);
+  }, [seconds, done, toast, questions.length]);
 
   useEffect(() => {
     if (done || !q) return;
@@ -61,68 +74,79 @@ export default function AssessmentPage() {
       const idx = map[e.key.toLowerCase()];
       if (idx !== undefined && q.options[idx] !== undefined) {
         e.preventDefault();
-        setAnswers(a => ({ ...a, [q.id]: idx }));
-      }
-      if (e.key === 'Enter' && answers[q.id] !== undefined) {
-        e.preventDefault();
-        if (step === ASSESSMENT_QUESTIONS.length - 1) {
-          setDone(true);
-          toast('success', 'Assessment scored. Skill map updated.');
-        } else setStep(s => s + 1);
+        choose(idx);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [answers, done, q, step, toast]);
+  });
+
+  if (questions.length === 0) {
+    return (
+      <div className="mx-auto max-w-2xl">
+        <PageHeader
+          kicker="Skill assessment"
+          title="Choose BAMS subjects first"
+          subtitle="Start as a BAMS student and select one or more subjects. This paper is built only from those subjects — 10 questions each."
+        />
+        <div className="card p-6">
+          <p className="text-sm text-ink-500">
+            {paper.stream && paper.stream !== 'BAMS'
+              ? `${paper.stream} subject banks are not in this prototype yet. Select BAMS in Get started to take Kayachikitsa, Panchakarma and the other BAMS papers.`
+              : 'No subjects selected. Open Get started, choose Student → BAMS, then pick the specialties to assess.'}
+          </p>
+          <Link to="/" className="btn-primary mt-5">
+            Get started
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const bySkill = paper.skills.map(skill => {
+    const qs = questions.filter(x => x.skill === skill);
+    const right = qs.filter(x => answers[x.id] === x.correct).length;
+    const score = Math.round((right / qs.length) * 100);
+    return { skill, score, right, total: qs.length };
+  });
+  const composite = Math.round(bySkill.reduce((s, r) => s + r.score, 0) / Math.max(1, bySkill.length));
 
   if (done) {
     return (
       <div className="mx-auto max-w-3xl">
         <PageHeader
-          kicker="Skill assessment"
+          kicker="BAMS subject assessment"
           title="Profile updated"
-          subtitle="Scores written to your skill map. Gaps now drive internship ranking."
+          subtitle={`Scored ${paper.skills.join(', ')}. Gaps now drive internship ranking.`}
         />
-        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="grid gap-6 lg:grid-cols-2">
-          <div className="card p-6 sm:p-8">
-            <ReadinessRing value={76} label="Composite" />
-            <ul className="mt-6 space-y-3 text-sm">
-              {RESULTS.map(r => (
-                <li
-                  key={r.n}
-                  className={`flex justify-between rounded-xl px-4 py-3 ${r.gap ? 'bg-saffron-50' : 'bg-cream-100'}`}
-                >
-                  <span>{r.n}</span>
-                  <span className={`font-semibold ${r.gap ? 'text-saffron-700' : 'text-forest-800'}`}>
-                    {r.s}
-                    {r.gap ? ' · gap' : ''}
+        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="card p-6 sm:p-8">
+          <ReadinessRing value={composite} label="Composite" />
+          <ul className="mt-6 space-y-3 text-sm">
+            {bySkill.map(r => (
+              <li
+                key={r.skill}
+                className={`flex justify-between gap-3 rounded-xl px-4 py-3 ${r.score < 70 ? 'bg-saffron-50' : 'bg-cream-100'}`}
+              >
+                <span>
+                  {r.skill}
+                  <span className="mt-0.5 block text-xs text-ink-500">
+                    {r.right}/{r.total} correct
                   </span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <Link to="/skills" className="btn-primary">
-                Open skill map
-              </Link>
-              <Link to="/opportunities" className="btn-secondary">
-                See ranked internships
-              </Link>
-            </div>
-          </div>
-          <div className="card p-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-forest-600">Skill radar</p>
-            <p className="mt-1 text-sm text-ink-500">You vs industry benchmark</p>
-            <div className="mt-2 h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={RADAR} cx="50%" cy="50%" outerRadius="70%">
-                  <PolarGrid stroke="#e7ebf1" />
-                  <PolarAngleAxis dataKey="skill" tick={{ fontSize: 11, fill: '#334155' }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10 }} />
-                  <Radar name="You" dataKey="you" stroke="#16553d" fill="#16553d" fillOpacity={0.32} />
-                  <Radar name="Benchmark" dataKey="bench" stroke="#c45c26" fill="#c45c26" fillOpacity={0.1} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
+                </span>
+                <span className={`shrink-0 font-semibold ${r.score < 70 ? 'text-saffron-700' : 'text-forest-800'}`}>
+                  {r.score}
+                  {r.score < 70 ? ' · gap' : ''}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link to="/skills" className="btn-primary">
+              Open skill map
+            </Link>
+            <Link to="/opportunities" className="btn-secondary">
+              See ranked internships
+            </Link>
           </div>
         </motion.div>
       </div>
@@ -132,9 +156,9 @@ export default function AssessmentPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader
-        kicker="Skill assessment"
-        title="AYUSH competency check"
-        subtitle="Tap an answer or use A–D. The timer is for the full paper — results feed match scores."
+        kicker={q.skill}
+        title="BAMS competency check"
+        subtitle={`${paper.skills.join(' · ')} · ${questions.length} questions from the subjects you selected.`}
         actions={
           <div
             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold tabular-nums ${
@@ -146,11 +170,13 @@ export default function AssessmentPage() {
           </div>
         }
       />
-      <div className="mb-3 flex gap-1.5">
-        {ASSESSMENT_QUESTIONS.map((_, i) => (
+      <div className="mb-3 flex flex-wrap gap-1">
+        {questions.map((item, i) => (
           <span
-            key={i}
-            className={`h-1.5 flex-1 rounded-full transition ${i < step ? 'bg-forest-600' : i === step ? 'bg-forest-400' : 'bg-white'}`}
+            key={item.id}
+            className={`h-1.5 min-w-[8px] flex-1 rounded-full transition ${
+              i < step ? 'bg-forest-600' : i === step ? 'bg-forest-400' : 'bg-white'
+            }`}
           />
         ))}
       </div>
@@ -160,24 +186,22 @@ export default function AssessmentPage() {
       <div className="card overflow-hidden p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">
-            Question {step + 1} of {ASSESSMENT_QUESTIONS.length}
+            {q.skill} · Question {step + 1} of {questions.length}
           </p>
           <p className="inline-flex items-center gap-1 text-[11px] font-medium text-ink-500">
-            <Keyboard size={12} /> A–D · Enter to continue
+            <Keyboard size={12} /> A–D · tap an option to continue
           </p>
         </div>
         <AnimatePresence mode="wait">
           <motion.div key={q.id} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }}>
-            <div className="mt-4 overflow-hidden rounded-2xl">
-              <QuestionArt id={q.id} />
-            </div>
             <h2 className="mt-4 font-serif text-xl font-semibold text-ink-900">{q.text}</h2>
             <div className="mt-6 space-y-2">
               {q.options.map((opt, i) => (
                 <button
                   key={opt}
                   type="button"
-                  onClick={() => setAnswers(a => ({ ...a, [q.id]: i }))}
+                  disabled={locked}
+                  onClick={() => choose(i)}
                   className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3.5 text-left text-sm transition ${
                     answers[q.id] === i
                       ? 'border-forest-700 bg-forest-50 font-medium shadow-sm ring-2 ring-forest-700/20'
@@ -197,22 +221,18 @@ export default function AssessmentPage() {
             </div>
           </motion.div>
         </AnimatePresence>
-        <div className="mt-6 flex justify-between">
-          <button type="button" className="btn-secondary" disabled={step === 0} onClick={() => setStep(s => s - 1)}>
-            Back
-          </button>
+        <div className="mt-6">
           <button
             type="button"
-            className="btn-primary"
-            disabled={answers[q.id] === undefined}
+            className="btn-secondary"
+            disabled={step === 0 || locked}
             onClick={() => {
-              if (step === ASSESSMENT_QUESTIONS.length - 1) {
-                setDone(true);
-                toast('success', 'Assessment scored. Skill map updated.');
-              } else setStep(s => s + 1);
+              lockRef.current = false;
+              setLocked(false);
+              setStep(s => s - 1);
             }}
           >
-            {step === ASSESSMENT_QUESTIONS.length - 1 ? 'Submit & score' : 'Next'}
+            Back
           </button>
         </div>
       </div>
