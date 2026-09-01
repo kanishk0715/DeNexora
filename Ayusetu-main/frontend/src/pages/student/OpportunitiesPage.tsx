@@ -1,34 +1,82 @@
 import { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Sparkles } from 'lucide-react';
-import { PageHeader, MatchBar } from '../../components/ui/Primitives';
+import { motion } from 'framer-motion';
+import { Bookmark, BookmarkCheck, GitCompare, MapPin, Sparkles } from 'lucide-react';
+import { PageHeader, MatchBar, EmptyState, Modal } from '../../components/ui/Primitives';
 import { DEMO_OPPORTUNITIES } from '../../data/demo';
 import { api } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
+
+const CITIES = ['All', ...Array.from(new Set(DEMO_OPPORTUNITIES.map(o => o.location)))];
+const SAVED_KEY = 'ayusetu-saved-opps';
+
+function loadSaved(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
 
 export default function OpportunitiesPage() {
   const { isDemo } = useAuth();
+  const { toast, dismiss } = useToast();
   const [query, setQuery] = useState('');
   const [type, setType] = useState('all');
+  const [city, setCity] = useState('All');
+  const [savedOnly, setSavedOnly] = useState(false);
+  const [saved, setSaved] = useState<string[]>(loadSaved);
+  const [compare, setCompare] = useState<string[]>([]);
+  const [showCompare, setShowCompare] = useState(false);
   const [applied, setApplied] = useState<string[]>([]);
   const [consent, setConsent] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
-  const [msg, setMsg] = useState('');
 
   const list = useMemo(() => {
     return DEMO_OPPORTUNITIES.filter(o => {
       const q = query.toLowerCase();
-      const hit = !q || o.title.toLowerCase().includes(q) || o.organization.toLowerCase().includes(q) || o.location.toLowerCase().includes(q);
+      const hit =
+        !q ||
+        o.title.toLowerCase().includes(q) ||
+        o.organization.toLowerCase().includes(q) ||
+        o.location.toLowerCase().includes(q);
       const t = type === 'all' || o.type === type;
-      return hit && t;
+      const c = city === 'All' || o.location === city;
+      const s = !savedOnly || saved.includes(o._id);
+      return hit && t && c && s;
     });
-  }, [query, type]);
+  }, [query, type, city, savedOnly, saved]);
+
+  const current = DEMO_OPPORTUNITIES.find(o => o._id === selected);
+  const pair = DEMO_OPPORTUNITIES.filter(o => compare.includes(o._id));
+
+  const toggleSave = (id: string) => {
+    setSaved(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      localStorage.setItem(SAVED_KEY, JSON.stringify(next));
+      toast('success', prev.includes(id) ? 'Removed from saved' : 'Saved to bookmarks');
+      return next;
+    });
+  };
+
+  const toggleCompare = (id: string) => {
+    setCompare(prev => {
+      if (prev.includes(id)) return prev.filter(x => x !== id);
+      if (prev.length >= 2) {
+        toast('info', 'Compare is limited to two openings. Uncheck one first.');
+        return prev;
+      }
+      return [...prev, id];
+    });
+  };
 
   const apply = async (id: string) => {
     if (!consent) {
-      setMsg('Please consent to share your profile with this organisation.');
+      toast('error', 'Please consent to share your profile with this organisation.');
       return;
     }
+    const loading = toast('loading', 'Submitting application…', 0);
+    await new Promise(r => setTimeout(r, 700));
     if (!isDemo) {
       try {
         await api.post('/applications', { opportunityId: id });
@@ -36,24 +84,47 @@ export default function OpportunitiesPage() {
         /* prototype still records locally */
       }
     }
+    dismiss(loading);
     setApplied(a => [...a, id]);
     setSelected(null);
-    setMsg('Application submitted. Track it under Internship & placement tracker.');
+    setConsent(false);
+    toast('success', 'Application submitted. Track it on the pipeline board.');
   };
 
   return (
-    <div>
+    <div className="mx-auto max-w-5xl">
       <PageHeader
         kicker="Industry requirement portal"
         title="Internships & placements"
-        subtitle="Hover a card, filter by type, then apply with consent. Ranked by AI match against verified AYUSH skills."
+        subtitle="Filter by city, save openings, or compare two side by side."
+        actions={
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={compare.length !== 2}
+            onClick={() => setShowCompare(true)}
+          >
+            <GitCompare size={16} /> Compare {compare.length}/2
+          </button>
+        }
       />
-      {msg && (
-        <p className="mb-4 rounded-xl border border-forest-200 bg-forest-50 px-4 py-3 text-sm text-forest-800">{msg}</p>
-      )}
+      <div className="mb-4 flex flex-wrap gap-2">
+        {CITIES.map(c => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => setCity(c)}
+            className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+              city === c ? 'bg-forest-700 text-white' : 'bg-white text-ink-700 hover:bg-cream-200'
+            }`}
+          >
+            <MapPin size={12} /> {c}
+          </button>
+        ))}
+      </div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
         <input className="input" placeholder="Search hospital, skill, city…" value={query} onChange={e => setQuery(e.target.value)} />
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {['all', 'internship', 'job'].map(t => (
             <button
               key={t}
@@ -66,82 +137,160 @@ export default function OpportunitiesPage() {
               {t === 'all' ? 'All' : t}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => setSavedOnly(v => !v)}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+              savedOnly ? 'bg-saffron-50 text-saffron-700' : 'bg-white text-ink-600 hover:bg-cream-200'
+            }`}
+          >
+            Saved ({saved.length})
+          </button>
         </div>
       </div>
-      <div className="grid gap-4">
-        {list.map(o => (
-          <motion.article
-            key={o._id}
-            layout
-            whileHover={{ y: -4 }}
-            className="card overflow-hidden p-0"
-          >
-            <div className="flex flex-col gap-4 p-5 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-2xl">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-saffron-50 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-saffron-700">
-                    {o.type}
-                  </span>
-                  {o.matchScore >= 85 && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-forest-50 px-2 py-0.5 text-[11px] font-semibold text-forest-800">
-                      <Sparkles size={12} /> Strong fit
+      {list.length === 0 ? (
+        <EmptyState
+          title={savedOnly ? 'No saved openings' : 'No matching openings'}
+          body={
+            savedOnly
+              ? 'Bookmark a card with the ribbon icon. Saved items stay on this device for the prototype.'
+              : 'Try another city, hospital or filter. New AYUSH postings appear as industry publishes them.'
+          }
+        />
+      ) : (
+        <div className="grid gap-4">
+          {list.map((o, i) => (
+            <motion.article
+              key={o._id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+              className="card overflow-hidden p-0"
+            >
+              <div className="flex flex-col gap-4 p-5 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-2xl">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-saffron-50 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-saffron-700">
+                      {o.type}
                     </span>
-                  )}
-                </div>
-                <h2 className="mt-2 font-serif text-xl font-semibold text-forest-900">{o.title}</h2>
-                <p className="mt-1 flex items-center gap-1 text-sm text-ink-500">
-                  <MapPin size={14} /> {o.organization} · {o.location} · {o.workMode} · {o.duration}
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-ink-700">{o.description}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {o.requiredSkills.map(s => (
-                    <span key={s.name} className="rounded-full bg-cream-200 px-2.5 py-1 text-xs font-medium text-forest-800">
-                      {s.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="w-full shrink-0 rounded-2xl bg-cream-100 p-4 lg:w-60">
-                <MatchBar score={o.matchScore} />
-                <p className="mt-3 text-xs text-ink-500">
-                  {o.numberOfPositions} seats · {o.applicantCount} applied
-                </p>
-                <p className="text-xs font-medium text-forest-800">{o.stipend}</p>
-                {applied.includes(o._id) ? (
-                  <p className="mt-3 text-sm font-semibold text-forest-700">Applied ✓</p>
-                ) : (
-                  <button type="button" className="btn-primary mt-3 w-full" onClick={() => setSelected(o._id)}>
-                    Apply
-                  </button>
-                )}
-              </div>
-            </div>
-            <AnimatePresence>
-              {selected === o._id && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden border-t border-forest-100 bg-cream-50 px-5 py-4"
-                >
-                  <label className="flex items-start gap-2 text-sm text-ink-700">
-                    <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} className="mt-1" />
-                    I consent to share my verified skill profile with {o.organization} (DPDP).
-                  </label>
-                  <div className="mt-3 flex gap-2">
-                    <button type="button" className="btn-primary" onClick={() => apply(o._id)}>
-                      Confirm application
-                    </button>
-                    <button type="button" className="btn-secondary" onClick={() => setSelected(null)}>
-                      Cancel
-                    </button>
+                    {o.matchScore >= 85 && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-forest-50 px-2 py-0.5 text-[11px] font-semibold text-forest-800">
+                        <Sparkles size={12} /> Strong fit
+                      </span>
+                    )}
+                    <label className="ml-auto inline-flex items-center gap-1.5 text-xs text-ink-500">
+                      <input type="checkbox" checked={compare.includes(o._id)} onChange={() => toggleCompare(o._id)} />
+                      Compare
+                    </label>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.article>
-        ))}
-      </div>
+                  <h2 className="mt-2 text-xl font-semibold text-ink-900">{o.title}</h2>
+                  <p className="mt-1 flex items-center gap-1 text-sm text-ink-500">
+                    <MapPin size={14} /> {o.organization} · {o.location} · {o.workMode} · {o.duration}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-ink-700">{o.description}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {o.requiredSkills.map(s => (
+                      <span key={s.name} className="rounded-full bg-cream-200 px-2.5 py-1 text-xs font-medium text-forest-800">
+                        {s.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="w-full shrink-0 rounded-2xl bg-cream-100 p-4 lg:w-60">
+                  <MatchBar score={o.matchScore} />
+                  <p className="mt-3 text-xs text-ink-500">
+                    {o.numberOfPositions} seats · {o.applicantCount} applied
+                  </p>
+                  <p className="text-xs font-medium text-forest-800">{o.stipend}</p>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      className="btn-secondary flex-1 px-3"
+                      onClick={() => toggleSave(o._id)}
+                      aria-label={saved.includes(o._id) ? 'Unsave' : 'Save'}
+                    >
+                      {saved.includes(o._id) ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                    </button>
+                    {applied.includes(o._id) ? (
+                      <p className="flex flex-1 items-center justify-center text-sm font-semibold text-forest-700">Applied ✓</p>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn-primary flex-[2]"
+                        onClick={() => {
+                          setConsent(false);
+                          setSelected(o._id);
+                        }}
+                      >
+                        Apply
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.article>
+          ))}
+        </div>
+      )}
+
+      <Modal
+        open={!!current}
+        onClose={() => setSelected(null)}
+        kicker="DPDP consent"
+        title={current ? `Apply · ${current.title}` : 'Apply'}
+      >
+        {current && (
+          <>
+            <p className="text-sm text-ink-500">
+              {current.organization} · {current.location}
+            </p>
+            <label className="mt-4 flex items-start gap-2 text-sm text-ink-700">
+              <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} className="mt-1" />
+              I consent to share my verified skill profile with {current.organization} (DPDP).
+            </label>
+            <div className="mt-5 flex gap-2">
+              <button type="button" className="btn-primary" onClick={() => apply(current._id)}>
+                Confirm application
+              </button>
+              <button type="button" className="btn-secondary" onClick={() => setSelected(null)}>
+                Cancel
+              </button>
+            </div>
+          </>
+        )}
+      </Modal>
+
+      <Modal open={showCompare} onClose={() => setShowCompare(false)} kicker="Side by side" title="Compare openings">
+        {pair.length === 2 ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {pair.map(o => (
+              <article key={o._id} className="rounded-xl border border-slate-200 p-4">
+                <p className="text-xs font-bold uppercase text-saffron-700">{o.type}</p>
+                <h3 className="mt-1 font-semibold text-ink-900">{o.title}</h3>
+                <p className="mt-1 text-xs text-ink-500">
+                  {o.organization} · {o.location}
+                </p>
+                <div className="mt-3">
+                  <MatchBar score={o.matchScore} />
+                </div>
+                <p className="mt-2 text-sm font-medium text-forest-800">{o.stipend}</p>
+                <p className="mt-1 text-xs text-ink-500">
+                  {o.duration} · {o.workMode} · {o.numberOfPositions} seats
+                </p>
+                <ul className="mt-3 space-y-1 text-xs text-ink-700">
+                  {o.requiredSkills.map(s => (
+                    <li key={s.name}>
+                      {s.name} · {s.requiredScore}+
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-ink-500">Select exactly two openings to compare.</p>
+        )}
+      </Modal>
     </div>
   );
 }

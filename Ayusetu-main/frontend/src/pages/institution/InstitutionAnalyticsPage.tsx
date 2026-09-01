@@ -23,7 +23,7 @@ export default function InstitutionAnalyticsPage() {
             <YAxis />
             <Tooltip />
             <Bar dataKey="demand" fill="#c45c26" name="Demand" />
-            <Bar dataKey="supply" fill="#143d32" name="Supply" />
+            <Bar dataKey="supply" fill="#16553d" name="Supply" />
           </BarChart>
         </ResponsiveContainer>
       </div>
