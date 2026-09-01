@@ -122,4 +122,48 @@ router.post('/recommendations', authMiddleware, async (req: Request, res: Respon
   await proxyJson('/ai/recommendations', req.body, res);
 });
 
+const JSON_AI_PATHS = [
+  '/explain-match',
+  '/rank-applicants',
+  '/score-written',
+  '/assessment-flags',
+  '/draft-mcq',
+  '/chat',
+  '/transliterate',
+  '/summarize',
+  '/skill-demand',
+  '/classify-research',
+] as const;
+
+for (const p of JSON_AI_PATHS) {
+  router.post(p, authMiddleware, async (req: Request, res: Response) => {
+    await proxyJson(`/ai${p}`, req.body, res);
+  });
+}
+
+router.post(
+  '/extract-certificate-skills',
+  authMiddleware,
+  upload.single('file'),
+  async (req: Request, res: Response) => {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+    try {
+      const form = new FormData();
+      form.append('file', req.file.buffer, {
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
+      });
+      const { status, data } = await axios.post(`${AI_URL}/ai/extract-certificate-skills`, form, {
+        headers: form.getHeaders(),
+      });
+      return res.status(status).json(data);
+    } catch (err: any) {
+      const status = err?.response?.status ?? 502;
+      return res.status(status).json(err?.response?.data ?? { success: false, message: 'AI service unavailable' });
+    }
+  },
+);
+
 export default router;

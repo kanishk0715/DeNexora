@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import { nlpChat } from '../lib/api';
+import { DEMO_OPPORTUNITIES } from '../data/demo';
 
 interface Message {
   text: string;
@@ -86,19 +88,24 @@ export function AyurvedaChatbot() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const asked = input;
     setInput('');
     setIsLoading(true);
 
-    // Simulate API delay
-    setTimeout(() => {
-      const botResponse: Message = {
-        text: getAyurvedaResponse(input),
-        isBot: true,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, botResponse]);
-      setIsLoading(false);
-    }, 800);
+    const extra = DEMO_OPPORTUNITIES.map(o => ({
+      id: o._id,
+      title: o.title,
+      text: `${o.title} at ${o.organization}, ${o.location}. ${o.description} Skills: ${o.requiredSkills.map(s => s.name).join(', ')}.`,
+    }));
+
+    const rag = await nlpChat(asked, extra);
+    const botResponse: Message = {
+      text: rag?.answer || getAyurvedaResponse(asked),
+      isBot: true,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, botResponse]);
+    setIsLoading(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

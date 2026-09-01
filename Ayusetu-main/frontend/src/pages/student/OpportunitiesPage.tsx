@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Bookmark, BookmarkCheck, GitCompare, MapPin, Sparkles, Brain } from 'lucide-react';
 import { PageHeader, MatchBar, EmptyState, Modal, SkillChipPicker } from '../../components/ui/Primitives';
 import { DEMO_OPPORTUNITIES, DEMO_SKILLS } from '../../data/demo';
-import { api, semanticProfileMatch } from '../../lib/api';
+import { api, semanticProfileMatch, explainOpportunityMatch } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -35,6 +35,7 @@ export default function OpportunitiesPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [semanticRanked, setSemanticRanked] = useState<string[] | null>(null);
   const [semanticBusy, setSemanticBusy] = useState(false);
+  const [why, setWhy] = useState<Record<string, string>>({});
 
   const list = useMemo(() => {
     const filtered = DEMO_OPPORTUNITIES.filter(o => {
@@ -88,6 +89,18 @@ export default function OpportunitiesPage() {
     const matches = await semanticProfileMatch(profileText, oppDescriptions, 10);
     if (matches.length > 0) {
       setSemanticRanked(matches.map(m => m.opportunity_id));
+      const notes: Record<string, string> = {};
+      await Promise.all(
+        DEMO_OPPORTUNITIES.map(async o => {
+          const exp = await explainOpportunityMatch(
+            o.title,
+            DEMO_SKILLS.map(s => ({ name: s.name, score: s.score })),
+            o.requiredSkills.map(s => ({ name: s.name, required_score: s.requiredScore })),
+          );
+          if (exp?.explanation) notes[o._id] = exp.explanation;
+        }),
+      );
+      setWhy(notes);
       toast('success', 'Opportunities reordered by semantic match to your profile.');
     } else {
       toast('info', 'AI service not reachable — start the AI service and try again.');
@@ -251,6 +264,7 @@ export default function OpportunitiesPage() {
                     <MapPin size={14} /> {o.organization} · {o.location} · {o.workMode} · {o.duration}
                   </p>
                   <p className="mt-3 text-sm leading-relaxed text-ink-700">{o.description}</p>
+                  {why[o._id] && <p className="mt-2 text-xs font-medium text-forest-800">{why[o._id]}</p>}
                   <div className="mt-3 flex flex-wrap gap-2">
                     {o.requiredSkills.map(s => (
                       <span key={s.name} className="rounded-full bg-cream-200 px-2.5 py-1 text-xs font-medium text-forest-800">

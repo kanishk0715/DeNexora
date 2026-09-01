@@ -6,6 +6,7 @@ import { PageHeader } from '../../components/ui/Primitives';
 import { ReadinessRing } from '../../components/ui/ReadinessRing';
 import { useToast } from '../../contexts/ToastContext';
 import { loadOnboarding, questionsForSkills, type BankQuestion } from '../../data/ayurvedaBank';
+import { fetchAssessmentFlags } from '../../lib/api';
 
 function formatTime(s: number) {
   const m = Math.floor(s / 60);
@@ -30,6 +31,7 @@ export default function AssessmentPage() {
   const [done, setDone] = useState(false);
   const [seconds, setSeconds] = useState(180);
   const [locked, setLocked] = useState(false);
+  const [nlpFlags, setNlpFlags] = useState<string[]>([]);
   const lockRef = useRef(false);
   const q = questions[step];
   const pct = questions.length ? ((step + (answers[q?.id] !== undefined ? 0.35 : 0)) / questions.length) * 100 : 0;
@@ -64,6 +66,19 @@ export default function AssessmentPage() {
       toast('info', 'Time is up — scoring from answers so far.');
     }
   }, [seconds, done, toast, questions.length]);
+
+  useEffect(() => {
+    if (!done) return;
+    void fetchAssessmentFlags(
+      questions.map(item => ({
+        skill_name: item.skill,
+        selected_option: answers[item.id],
+        correct_answer: item.correct,
+      })),
+    ).then(d => {
+      if (d?.flags?.length) setNlpFlags(d.flags);
+    });
+  }, [done, answers, questions]);
 
   useEffect(() => {
     if (done || !q) return;
@@ -121,6 +136,13 @@ export default function AssessmentPage() {
         />
         <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="card p-6 sm:p-8">
           <ReadinessRing value={composite} label="Composite" />
+          {nlpFlags.length > 0 && (
+            <ul className="mt-4 space-y-1 text-xs text-saffron-700">
+              {nlpFlags.map(f => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+          )}
           <ul className="mt-6 space-y-3 text-sm">
             {bySkill.map(r => (
               <li

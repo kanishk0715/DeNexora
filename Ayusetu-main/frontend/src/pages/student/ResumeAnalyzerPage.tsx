@@ -125,6 +125,37 @@ export default function ResumeAnalyzerPage() {
               </span>
               <p className="text-xs font-semibold uppercase tracking-wide text-forest-600">Skills on your CV</p>
             </div>
+            {result.skill_summary && <p className="mt-4 text-sm leading-relaxed text-ink-700">{result.skill_summary}</p>}
+            {(result.education?.length || result.clinical_hours || result.location) && (
+              <dl className="mt-4 grid gap-2 text-xs sm:grid-cols-3">
+                {result.education && result.education.length > 0 && (
+                  <div className="rounded-xl bg-cream-100 p-3">
+                    <dt className="text-ink-500">Education</dt>
+                    <dd className="mt-1 font-semibold text-ink-900">{result.education.join(', ')}</dd>
+                  </div>
+                )}
+                {result.clinical_hours != null && (
+                  <div className="rounded-xl bg-cream-100 p-3">
+                    <dt className="text-ink-500">Hours on CV</dt>
+                    <dd className="mt-1 font-semibold text-ink-900">{result.clinical_hours}</dd>
+                  </div>
+                )}
+                {result.location && (
+                  <div className="rounded-xl bg-cream-100 p-3">
+                    <dt className="text-ink-500">Location</dt>
+                    <dd className="mt-1 font-semibold text-ink-900">{result.location}</dd>
+                  </div>
+                )}
+              </dl>
+            )}
+            {result.evidenced_skills && result.evidenced_skills.length > 0 && (
+              <p className="mt-3 text-xs text-forest-800">
+                Evidenced: {result.evidenced_skills.join(', ')}
+              </p>
+            )}
+            {result.self_declared_skills && result.self_declared_skills.length > 0 && (
+              <p className="mt-1 text-xs text-ink-500">Listed / self-declared: {result.self_declared_skills.join(', ')}</p>
+            )}
 
             {/* Semantic details with confidence */}
             {result.semantic_details && result.semantic_details.length > 0 ? (
@@ -143,6 +174,11 @@ export default function ResumeAnalyzerPage() {
                           <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${confidenceColor(detail.confidence)}`}>
                             {pct(detail.confidence)}%
                           </span>
+                          {detail.evidence && (
+                            <span className="rounded-full bg-cream-100 px-2 py-0.5 text-[10px] font-medium text-ink-500">
+                              {detail.evidence}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="mt-1.5 pl-6">
@@ -208,9 +244,9 @@ export default function ResumeAnalyzerPage() {
               Based on gaps vs platform skill ontology.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {BAMS_SUBJECTS.slice(0, 4).map(s => (
-                <span key={s.id} className="rounded-full bg-cream-100 px-3 py-1 text-xs font-medium text-forest-800">
-                  {s.label}
+              {(result.suggested_gaps?.length ? result.suggested_gaps : BAMS_SUBJECTS.slice(0, 4).map(s => s.label)).map(s => (
+                <span key={s} className="rounded-full bg-cream-100 px-3 py-1 text-xs font-medium text-forest-800">
+                  {s}
                 </span>
               ))}
             </div>
