@@ -20,13 +20,17 @@ import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminVerificationsPage from './pages/admin/AdminVerificationsPage';
 import FacultyHubPage from './pages/faculty/FacultyHubPage';
 import PublicPortfolioPage from './pages/PublicPortfolioPage';
-import LoginPage from './pages/auth/LoginPage';
+// import LoginPage from './pages/auth/LoginPage';
+import StudentLogin from './pages/auth/StudentLogin';
+import FacultyHospitalLogin from './pages/auth/FacultyHospitalLogin';
+import InstituteMinistryLogin from './pages/auth/InstituteMinistryLogin';
 import RegisterPage from './pages/auth/RegisterPage';
 import AboutPage from './pages/AboutPage';
 import { LocaleProvider } from './contexts/LocaleContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { CommandPalette } from './components/CommandPalette';
 import { ForbiddenPage, NotFoundPage } from './components/ErrorPages';
+import { AyurvedaChatbot } from './components/AyurvedaChatbot';
 
 export default function App() {
   return (
@@ -35,10 +39,14 @@ export default function App() {
       <ToastProvider>
       <BrowserRouter>
         <CommandPalette />
+        <AyurvedaChatbot />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login" element={<StudentLogin />} />
+          <Route path="/login/student" element={<StudentLogin />} />
+          <Route path="/login/faculty-hospital" element={<FacultyHospitalLogin />} />
+          <Route path="/login/institute-ministry" element={<InstituteMinistryLogin />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/p/:slug" element={<PublicPortfolioPage />} />
 

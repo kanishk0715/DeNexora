@@ -8,7 +8,7 @@ import { COPY } from '../../i18n/public';
 import { LanguageSelect } from './LanguageSelect';
 
 export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { lang } = useLocale();
   const location = useLocation();
   const navigate = useNavigate();
@@ -22,6 +22,11 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
     setOpen(false);
     if (onGetStarted) onGetStarted();
     else navigate('/?start=1');
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   const links: { to?: string; hash?: string; label: string }[] = [
@@ -41,7 +46,7 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
             key={l.to}
             to={l.to}
             onClick={onClick}
-            className={`rounded-lg px-3 py-2 text-sm font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee] ${
+            className={`rounded-lg px-4 py-2 text-base font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee] ${
               location.pathname === l.to ? 'bg-[#e8f3ee] shadow-sm' : ''
             }`}
           >
@@ -52,7 +57,7 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
             key={l.hash}
             href={href(l.hash!)}
             onClick={onClick}
-            className="rounded-lg px-3 py-2 text-sm font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee]"
+            className="rounded-lg px-4 py-2 text-base font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee]"
           >
             {l.label}
           </a>
@@ -63,6 +68,7 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
 
   return (
     <IndiaAppBar
+      innerClassName="mx-auto max-w-7xl px-4"
       after={
         open ? (
           <div className="border-b border-[#e4f4ea] bg-white px-4 py-3 lg:hidden">
@@ -73,31 +79,43 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
         ) : null
       }
     >
+      {/* Logo - Left Side */}
       <Link to="/" className="flex shrink-0 items-center" aria-label="Ministry of Ayush home">
-        <MinistryLogo />
+        <MinistryLogo className="h-10 w-auto sm:h-11" />
       </Link>
 
-      <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary">
+      {/* Navigation - Center */}
+      <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex" aria-label="Primary">
         <NavItems />
       </nav>
 
-      <div className="flex items-center gap-1 sm:gap-2">
+      {/* Actions - far right of the header */}
+      <div className="ml-auto flex shrink-0 items-center gap-2">
         <LanguageSelect />
         {user ? (
-          <Link to="/dashboard" className="btn-primary !bg-[#0b5c3a] hover:!bg-[#084830]">
-            {c.openWorkspace}
-          </Link>
+          <>
+            <button
+              type="button"
+              className="hidden rounded-lg border border-[#0b5c3a] bg-white px-4 py-2 text-base font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee] sm:block"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+            <Link to="/dashboard" className="btn-primary !bg-[#0b5c3a] px-4 py-2 text-base font-semibold hover:!bg-[#084830]">
+              {c.openWorkspace}
+            </Link>
+          </>
         ) : (
           <>
             <Link
               to="/login"
-              className="rounded-xl px-3 py-2 text-sm font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee] sm:px-4 sm:py-2.5"
+              className="hidden rounded-lg border border-[#0b5c3a] bg-white px-4 py-2 text-base font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee] sm:block"
             >
               {c.login}
             </Link>
             <button
               type="button"
-              className="btn-primary !bg-[#0b5c3a] px-3 py-2 hover:!bg-[#084830] sm:px-5 sm:py-2.5"
+              className="btn-primary !bg-[#0b5c3a] px-4 py-2 text-base font-semibold hover:!bg-[#084830]"
               onClick={start}
             >
               {c.getStarted}

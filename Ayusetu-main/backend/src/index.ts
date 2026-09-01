@@ -48,7 +48,8 @@ app.get('/health', (_req: Request, res: Response) => {
     data: {
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
-      mongodb: 'connected',
+      database: 'virtual-memory (mock mode)',
+      status: 'ready',
     },
   });
 });
