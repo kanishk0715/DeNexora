@@ -33,7 +33,8 @@ const ROLE_ICONS = {
   admin: ShieldCheck,
 } as const;
 
-const FEATURE_ICONS = [GraduationCap, Building2, Brain, Briefcase, BarChart3];
+const FEATURE_ICONS = [GraduationCap, Building2, Brain, Briefcase, BarChart3, BookOpen];
+const FEATURE_IMAGES = ['/1.jpeg', '/2.jpeg', '/3.jpeg', '/4.jpeg', '/5.jpeg', '/6.jpeg'];
 
 type EntryKind = 'student' | 'partners' | 'admin';
 
@@ -642,6 +643,7 @@ export default function LandingPage() {
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {t.features.items.map((p, i) => {
                 const Icon = FEATURE_ICONS[i] ?? Brain;
+                const img = FEATURE_IMAGES[i];
                 return (
                   <motion.article
                     key={p.t}
@@ -649,15 +651,27 @@ export default function LandingPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.08 }}
-                    className="group relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-forest-300 hover:shadow-2xl"
+                    className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md transition-all duration-300 hover:-translate-y-2 hover:border-forest-300 hover:shadow-2xl"
                   >
-                    <div className="absolute top-0 right-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-gradient-to-br from-forest-400/10 to-saffron-400/10 blur-2xl transition-transform duration-300 group-hover:scale-150" />
-                    <div className="relative">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-forest-600 to-forest-700 text-white shadow-lg transition-transform duration-300 group-hover:scale-110">
-                        <Icon size={24} />
+                    {/* Image header */}
+                    <div className="relative h-44 w-full overflow-hidden">
+                      <img
+                        src={img}
+                        alt={p.t}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      {/* gradient fade into card body */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
+                      {/* icon floating on image bottom-left */}
+                      <div className="absolute bottom-3 left-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white/90 text-forest-700 shadow-lg backdrop-blur-sm">
+                        <Icon size={20} />
                       </div>
-                      <h3 className="mt-5 text-lg font-bold text-ink-900">{p.t}</h3>
-                      <p className="mt-3 text-sm leading-relaxed text-ink-600">{p.b}</p>
+                    </div>
+
+                    {/* Card body */}
+                    <div className="px-6 pb-6 pt-3">
+                      <h3 className="text-base font-bold text-ink-900">{p.t}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-ink-500">{p.b}</p>
                     </div>
                   </motion.article>
                 );
@@ -680,6 +694,8 @@ export default function LandingPage() {
                 ))}
               </ul>
             </div>
+
+            {/* Skill bars card */}
             <div className="card p-6">
               <p className="text-xs font-semibold uppercase tracking-wide text-forest-600">{t.pathways.sample}</p>
               {[

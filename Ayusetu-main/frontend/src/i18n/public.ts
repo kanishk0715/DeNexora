@@ -104,6 +104,7 @@ const EN: PublicCopy = {
       { t: 'AI skill mapping', b: 'Match scores against requirements, with gaps shown clearly.' },
       { t: 'Placement tracker', b: 'Apply, shortlist, interview and confirm offers end to end.' },
       { t: 'Analytics', b: 'Skill-gap and placement reports for institutes and the ministry.' },
+      { t: 'AYUSH curriculum', b: 'Comprehensive subject coverage across BAMS, BNYS, BUMS, BSMS, and BHMS streams.' },
     ],
   },
   pathways: {
