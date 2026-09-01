@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isDemo: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, allowedRoles?: User['role'][]) => Promise<void>;
   enterDemo: (role: User['role']) => void;
   logout: () => void;
   loading: boolean;
@@ -100,9 +100,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(DEMO_PROFILES[role]);
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, allowedRoles?: User['role'][]) => {
     const res = await api.post('/auth/login', { email, password });
     const { token: newToken, user: u } = res.data.data;
+    if (allowedRoles?.length && !allowedRoles.includes(u.role)) {
+      throw new Error('This account does not match this login. Use the portal for your role.');
+    }
     localStorage.removeItem('ayusetu-demo');
     localStorage.removeItem('ayusetu-demo-role');
     localStorage.setItem('token', newToken);

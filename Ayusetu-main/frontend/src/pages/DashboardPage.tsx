@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, ClipboardList, Briefcase, FileCheck } from 'lucide-react';
+import { ArrowRight, ClipboardList, Briefcase, FileCheck, FileScan } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { PageHeader, StatCard, MatchBar, StatusBadge } from '../components/ui/Primitives';
 import { ReadinessRing } from '../components/ui/ReadinessRing';
@@ -40,9 +40,10 @@ function StudentDash({ name }: { name: string }) {
           <StatCard label="Skill gaps" value="2" hint="Docs + Nadi Pariksha" />
         </div>
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { to: '/assessment', label: 'Continue assessment', hint: 'Write scores into your map', icon: ClipboardList },
+          { to: '/resume', label: 'Resume analyzer', hint: 'Map CV skills to AYUSH internships', icon: FileScan },
           { to: '/opportunities', label: 'Ranked internships', hint: 'Gap-aware match order', icon: Briefcase },
           { to: '/portfolio', label: 'Public profile', hint: 'Unverified items stay hidden', icon: FileCheck },
         ].map(item => {
