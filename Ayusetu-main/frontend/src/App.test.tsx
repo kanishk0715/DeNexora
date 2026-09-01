@@ -24,9 +24,17 @@ describe('App', () => {
     expect(screen.getAllByText('About').length).toBeGreaterThan(0);
   });
 
-  it('renders the idea subtitle', () => {
+  it('lists all 22 official Indian languages plus English', () => {
     render(<App />);
-    expect(screen.getAllByText(/AYUSH skill bridge/i).length).toBeGreaterThan(0);
+    const select = screen.getByLabelText(/Language/i);
+    expect(select.querySelectorAll('option').length).toBe(23);
+    expect(select.querySelector('optgroup')?.getAttribute('label')).toBe('Official languages of India');
+    expect(select.querySelectorAll('optgroup option').length).toBe(22);
+  });
+
+  it('renders the ministry logo in the navbar', () => {
+    render(<App />);
+    expect(screen.getAllByAltText(/Ministry of Ayush/i).length).toBeGreaterThan(0);
   });
 
   it('puts Login in the navbar, not as the home screen', () => {

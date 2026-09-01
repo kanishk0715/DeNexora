@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { Logo } from '../Logo';
+import { IndiaAppBar, MinistryLogo } from '../brand/IndiaMark';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocale } from '../../contexts/LocaleContext';
 import { COPY } from '../../i18n/public';
+import { LanguageSelect } from './LanguageSelect';
 
 export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
   const { user } = useAuth();
-  const { lang, toggleLang } = useLocale();
+  const { lang } = useLocale();
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -39,8 +40,8 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
             key={l.to}
             to={l.to}
             onClick={onClick}
-            className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-cream-100 hover:text-forest-800 ${
-              location.pathname === l.to ? 'text-forest-800' : 'text-ink-700'
+            className={`rounded-lg px-3 py-2 text-sm font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee] ${
+              location.pathname === l.to ? 'bg-[#e8f3ee]' : ''
             }`}
           >
             {l.label}
@@ -50,7 +51,7 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
             key={l.hash}
             href={href(l.hash!)}
             onClick={onClick}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-ink-700 transition hover:bg-cream-100 hover:text-forest-800"
+            className="rounded-lg px-3 py-2 text-sm font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee]"
           >
             {l.label}
           </a>
@@ -60,60 +61,57 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-        <Link to="/" className="shrink-0" aria-label="AyuSetu home">
-          <Logo />
-        </Link>
+    <IndiaAppBar
+      after={
+        open ? (
+          <div className="border-b border-[#e4f4ea] bg-white px-4 py-3 lg:hidden">
+            <nav className="flex flex-col gap-1" aria-label="Mobile">
+              <NavItems onClick={() => setOpen(false)} />
+            </nav>
+          </div>
+        ) : null
+      }
+    >
+      <Link to="/" className="flex shrink-0 items-center" aria-label="Ministry of Ayush home">
+        <MinistryLogo />
+      </Link>
 
-        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary">
-          <NavItems />
-        </nav>
+      <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary">
+        <NavItems />
+      </nav>
 
-        <div className="flex items-center gap-1 sm:gap-2">
-          <button
-            type="button"
-            onClick={toggleLang}
-            className="rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-forest-800 hover:bg-cream-100"
-            aria-label={lang === 'en' ? 'Switch to Hindi' : 'Switch to English'}
-          >
-            {lang === 'en' ? 'हिन्दी' : 'EN'}
-          </button>
-          {user ? (
-            <Link to="/dashboard" className="btn-primary">
-              {c.openWorkspace}
+      <div className="flex items-center gap-1 sm:gap-2">
+        <LanguageSelect />
+        {user ? (
+          <Link to="/dashboard" className="btn-primary !bg-[#0b5c3a] hover:!bg-[#084830]">
+            {c.openWorkspace}
+          </Link>
+        ) : (
+          <>
+            <Link
+              to="/login"
+                className="rounded-xl px-3 py-2 text-sm font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee] sm:px-4 sm:py-2.5"
+            >
+              {c.login}
             </Link>
-          ) : (
-            <>
-              <Link
-                to="/login"
-                className="rounded-xl px-3 py-2 text-sm font-semibold text-forest-800 transition hover:bg-cream-100 sm:px-4 sm:py-2.5"
-              >
-                {c.login}
-              </Link>
-              <button type="button" className="btn-primary px-3 py-2 sm:px-5 sm:py-2.5" onClick={start}>
-                {c.getStarted}
-              </button>
-            </>
-          )}
-          <button
-            type="button"
-            className="rounded-lg p-2 text-ink-700 hover:bg-cream-100 lg:hidden"
-            aria-label={open ? 'Close menu' : 'Open menu'}
-            onClick={() => setOpen(v => !v)}
-          >
-            {open ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
+            <button
+              type="button"
+                  className="btn-primary !bg-[#0b5c3a] px-3 py-2 hover:!bg-[#084830] sm:px-5 sm:py-2.5"
+              onClick={start}
+            >
+              {c.getStarted}
+            </button>
+          </>
+        )}
+        <button
+          type="button"
+          className="rounded-lg p-2 text-[#0b5c3a] hover:bg-[#e8f3ee] lg:hidden"
+          aria-label={open ? 'Close menu' : 'Open menu'}
+          onClick={() => setOpen(v => !v)}
+        >
+          {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
       </div>
-
-      {open && (
-        <div className="border-t border-slate-100 bg-white px-4 py-3 lg:hidden">
-          <nav className="flex flex-col gap-1" aria-label="Mobile">
-            <NavItems onClick={() => setOpen(false)} />
-          </nav>
-        </div>
-      )}
-    </header>
+    </IndiaAppBar>
   );
 }
