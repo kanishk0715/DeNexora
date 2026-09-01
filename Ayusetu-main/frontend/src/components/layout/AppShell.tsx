@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Logo, ROLE_LABEL } from '../Logo';
+import { TirangaBar } from './TirangaBar';
 import { SearchTrigger } from '../CommandPalette';
 import { PageSkeleton } from '../ui/Skeleton';
 import type { User } from '../../types/api';
@@ -115,7 +116,9 @@ export default function AppShell() {
             Prototype — sample AYUSH data
           </div>
         )}
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur lg:px-8">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+          <TirangaBar />
+          <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-8">
           <div className="lg:hidden">
             <Logo compact />
           </div>
@@ -172,6 +175,7 @@ export default function AppShell() {
             >
               <LogOut size={18} />
             </button>
+          </div>
           </div>
         </header>
 

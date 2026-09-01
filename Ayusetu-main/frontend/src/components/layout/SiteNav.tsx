@@ -3,6 +3,7 @@ import { Logo } from '../Logo';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocale } from '../../contexts/LocaleContext';
 import { COPY } from '../../i18n/public';
+import { TirangaBar } from './TirangaBar';
 
 export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur">
+      <TirangaBar />
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
         <Link to="/" className="shrink-0" aria-label="AyuSetu home">
           <Logo />
