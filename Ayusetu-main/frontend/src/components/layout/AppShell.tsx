@@ -97,7 +97,7 @@ export default function AppShell() {
 
   const drawerInner = (
     <>
-      <div className="shrink-0 border-b border-slate-100 bg-gradient-to-b from-forest-50/70 to-white px-4 py-3">
+      <div className="shrink-0 border-b border-forest-100 bg-gradient-to-b from-forest-50 to-white px-4 py-3">
         <MinistryLogo className="h-16 w-auto" />
       </div>
       <nav className="min-h-0 flex-1 space-y-0.5 overflow-hidden p-3">
@@ -111,8 +111,8 @@ export default function AppShell() {
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                   isActive
-                    ? 'bg-forest-50 text-forest-800 shadow-sm ring-1 ring-forest-100'
-                    : 'text-ink-500 hover:bg-cream-100 hover:text-ink-900'
+                    ? 'bg-forest-100 text-forest-800 font-semibold shadow-sm ring-1 ring-forest-200'
+                    : 'text-ink-600 hover:bg-forest-50 hover:text-forest-800'
                 }`
               }
             >
@@ -122,13 +122,13 @@ export default function AppShell() {
           );
         })}
       </nav>
-      <p className="shrink-0 border-t border-slate-100 px-5 py-4 text-xs text-ink-500">AYUSH pathways</p>
+      <p className="shrink-0 border-t border-forest-100 px-5 py-4 text-xs font-medium text-forest-700">AYUSH pathways</p>
     </>
   );
 
   return (
-    <div className="flex h-dvh max-h-dvh overflow-hidden overscroll-none bg-cream-100">
-      <aside className="hidden h-full w-60 shrink-0 overflow-hidden border-r border-slate-200 bg-white md:flex md:flex-col">
+    <div className="flex h-dvh max-h-dvh overflow-hidden overscroll-none bg-slate-50">
+      <aside className="hidden h-full w-60 shrink-0 overflow-hidden border-r border-forest-100 bg-white md:flex md:flex-col">
         {drawerInner}
       </aside>
 
@@ -138,7 +138,7 @@ export default function AppShell() {
           <aside className="relative flex h-full w-60 flex-col overflow-hidden bg-white shadow-xl">
             <button
               type="button"
-              className="absolute right-2 top-2 rounded-lg p-2 text-ink-500 hover:bg-cream-100"
+              className="absolute right-2 top-2 rounded-lg p-2 text-ink-500 hover:bg-forest-100"
               aria-label="Close menu"
               onClick={() => setDrawer(false)}
             >
@@ -150,15 +150,10 @@ export default function AppShell() {
       )}
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        {isDemo && (
-          <div className="no-print shrink-0 bg-saffron-50 px-4 py-1.5 text-center text-xs font-medium text-saffron-700">
-            Prototype — sample AYUSH data
-          </div>
-        )}
-        <IndiaAppBar innerClassName="px-4 lg:px-8">
+        <IndiaAppBar innerClassName="px-4 lg:px-8" variant="light">
           <button
             type="button"
-            className="rounded-lg p-2 text-ink-700 hover:bg-cream-100 md:hidden"
+            className="rounded-lg p-2 text-ink-700 hover:bg-forest-100 md:hidden"
             aria-label="Open menu"
             onClick={() => setDrawer(true)}
           >
@@ -169,13 +164,13 @@ export default function AppShell() {
           <div className="relative ml-auto flex items-center gap-2">
             <button
               type="button"
-              className="rounded-lg p-2 text-ink-700 hover:bg-cream-100 md:hidden"
+              className="rounded-lg p-2 text-ink-700 hover:bg-forest-100 md:hidden"
               aria-label="Search internships"
               onClick={() => window.dispatchEvent(new Event('ayusetu-palette'))}
             >
               <Search size={18} />
             </button>
-            <button className="relative rounded-lg p-2 text-ink-700 hover:bg-cream-100" aria-label="Notifications" onClick={() => setBell(v => !v)}>
+            <button className="relative rounded-lg p-2 text-ink-700 hover:bg-forest-100" aria-label="Notifications" onClick={() => setBell(v => !v)}>
               <Bell size={18} />
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-saffron-500" />
             </button>
@@ -186,7 +181,7 @@ export default function AppShell() {
                   <button
                     key={n.t}
                     type="button"
-                    className="block w-full px-4 py-3 text-left text-sm hover:bg-cream-100"
+                    className="block w-full px-4 py-3 text-left text-sm hover:bg-forest-50"
                     onClick={() => {
                       setBell(false);
                       navigate('/applications');
@@ -198,13 +193,13 @@ export default function AppShell() {
                 ))}
               </div>
             )}
-            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-cream-100 py-1 pl-1 pr-3">
+            <div className="flex items-center gap-2 rounded-full border border-forest-300 bg-white py-1 pl-1 pr-3 shadow-sm">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-forest-600 text-xs font-bold text-white">
                 {user.name.slice(0, 1)}
               </div>
               <div className="hidden sm:block">
-                <p className="text-sm font-semibold leading-none text-ink-900">{user.name.split(' ')[0]}</p>
-                <p className="mt-0.5 text-[10px] text-ink-500">{ROLE_LABEL[user.role]}</p>
+                <p className="text-sm font-semibold leading-none text-forest-900">{user.name.split(' ')[0]}</p>
+                <p className="mt-0.5 text-[10px] text-forest-700">{ROLE_LABEL[user.role]}</p>
               </div>
             </div>
             <button
@@ -237,7 +232,7 @@ export default function AppShell() {
       </div>
 
       <nav
-        className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+        className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-forest-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
         aria-label="Workspace"
       >
         <div className="flex">
@@ -250,7 +245,7 @@ export default function AppShell() {
                 end={item.to === '/' || item.to === '/dashboard'}
                 className={({ isActive }) =>
                   `flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-medium ${
-                    isActive ? 'text-forest-800' : 'text-ink-500'
+                    isActive ? 'text-forest-700' : 'text-ink-400'
                   }`
                 }
               >

@@ -13,7 +13,7 @@ const GATES = {
     panelBody: 'Verified AYUSH skills, DPDP consent, and a placement tracker in one workspace.',
     allowed: ['student'] as User['role'][],
     demo: 'student' as User['role'],
-    demoLabel: 'Open student prototype',
+    demoLabel: 'Enter as student',
     register: '/register?role=student',
   },
   partners: {
@@ -24,7 +24,7 @@ const GATES = {
     panelBody: 'Post internships, attest student credentials, or join faculty development.',
     allowed: ['academician', 'industry', 'institution'] as User['role'][],
     demo: 'industry' as User['role'],
-    demoLabel: 'Open partner prototype',
+    demoLabel: 'Enter as partner',
     register: '/register?role=partners',
   },
   ministry: {
@@ -35,7 +35,7 @@ const GATES = {
     panelBody: 'State-wise internships, verified credentials and institute onboarding.',
     allowed: ['admin'] as User['role'][],
     demo: 'admin' as User['role'],
-    demoLabel: 'Open ministry prototype',
+    demoLabel: 'Enter as ministry',
     register: '/register?role=ministry',
   },
 } as const;
@@ -77,7 +77,7 @@ export default function RoleLoginPage() {
       await login(email, password, [...cfg.allowed]);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || err.response?.data?.message || 'Live login needs the backend. Use the prototype below.');
+      setError(err.message || err.response?.data?.message || 'Live login requires backend connection. Use demo access below.');
     } finally {
       setLoading(false);
     }
@@ -135,7 +135,7 @@ export default function RoleLoginPage() {
           <div className="mt-4 grid gap-2">
             {PARTNER_DEMOS.map(p => (
               <button key={p.role} type="button" className="btn-secondary w-full" onClick={() => openDemo(p.role)}>
-                Open {p.label.toLowerCase()} prototype
+                Enter as {p.label.toLowerCase()}
               </button>
             ))}
           </div>

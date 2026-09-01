@@ -211,7 +211,7 @@ export default function OpportunitiesPage() {
           title={savedOnly ? 'No saved openings' : 'No matching openings'}
           body={
             savedOnly
-              ? 'Bookmark a card with the ribbon icon. Saved items stay on this device for the prototype.'
+              ? 'Bookmark opportunities with the ribbon icon. Saved items stay on this device.'
               : 'Try another city, hospital or filter. New AYUSH postings appear as industry publishes them.'
           }
         />

@@ -61,21 +61,30 @@ function RoleTiles({
         const copy = labels[item.kind];
         const on = selected === item.kind;
         return (
-          <button
+        <button
             key={item.kind}
             type="button"
             onClick={() => onPick(item.kind)}
-            className={`card-hover group p-6 text-left ${on ? 'border-forest-400 ring-2 ring-forest-600/20' : ''}`}
+            className={`group relative overflow-hidden rounded-2xl border-2 p-8 text-left shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${
+              on 
+                ? 'border-forest-500 bg-gradient-to-br from-forest-50 to-forest-100 ring-4 ring-forest-500/20' 
+                : 'border-slate-200 bg-white hover:border-forest-300 hover:bg-gradient-to-br hover:from-white hover:to-forest-50/30'
+            }`}
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-forest-50 text-forest-700">
-              <Icon size={20} />
-            </span>
-            <p className="mt-4 text-lg font-bold text-forest-800">{copy.label}</p>
-            <p className="mt-1 text-sm text-ink-500">{copy.hint}</p>
-            <p className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-forest-600">
-              {startLabel}
-              <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
-            </p>
+            <div className="absolute top-0 right-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-gradient-to-br from-forest-400/10 to-saffron-400/10 blur-2xl transition-transform duration-300 group-hover:scale-150" />
+            <div className="relative">
+              <span className={`flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-110 ${
+                on ? 'bg-gradient-to-br from-forest-600 to-forest-700 text-white' : 'bg-gradient-to-br from-forest-50 to-forest-100 text-forest-700'
+              }`}>
+                <Icon size={24} />
+              </span>
+              <p className="mt-5 text-xl font-bold text-ink-900">{copy.label}</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-600">{copy.hint}</p>
+              <p className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-forest-700">
+                {startLabel}
+                <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
+              </p>
+            </div>
           </button>
         );
       })}
@@ -259,7 +268,7 @@ export default function LandingPage() {
   }, [location.hash]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-cream-100 text-ink-900">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-forest-50/30 via-white to-saffron-50/30 text-ink-900">
       <Modal
         open={open}
         onClose={reset}
@@ -436,31 +445,37 @@ export default function LandingPage() {
               alt=""
               className="h-full w-full object-cover object-[center_38%] opacity-[0.68]"
             />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(250,246,240,0.70)_0%,_rgba(250,246,240,0.42)_50%,_rgba(250,246,240,0.18)_100%)]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-cream-100/25 via-transparent to-cream-100" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.70)_0%,_rgba(255,255,255,0.42)_50%,_rgba(255,255,255,0.18)_100%)]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/25 via-transparent to-white" />
           </div>
           <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-12 lg:grid-cols-2 lg:pb-20 lg:pt-16">
             <div className="text-center lg:text-left">
             <motion.p
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex rounded-full border border-saffron-100 bg-saffron-50/90 px-3 py-1 text-xs font-semibold text-saffron-700 shadow-sm"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-saffron-200 bg-gradient-to-r from-saffron-50 to-saffron-100 px-4 py-2 text-xs font-bold text-saffron-800 shadow-lg shadow-saffron-200/50"
             >
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-saffron-600 opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-saffron-600"></span>
+              </span>
               {t.hero.badge}
             </motion.p>
             <motion.h1
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="mt-5 font-serif text-4xl font-semibold leading-[1.15] tracking-tight text-ink-900 sm:text-5xl lg:text-[3.15rem]"
+              className="mt-6 font-serif text-4xl font-bold leading-[1.12] tracking-tight text-ink-900 sm:text-5xl lg:text-6xl"
             >
-              {t.hero.title}
+              <span className="gradient-text">{t.hero.title.split(' ').slice(0, 3).join(' ')}</span>
+              <br />
+              {t.hero.title.split(' ').slice(3).join(' ')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink-500 lg:mx-0"
+              className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-ink-600 lg:mx-0"
             >
               {t.hero.body}
             </motion.p>
@@ -486,12 +501,14 @@ export default function LandingPage() {
                 {t.hero.how}
               </a>
             </motion.div>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-5 text-sm text-ink-500 lg:justify-start">
-              <span className="flex items-center gap-2">
-                <ShieldCheck size={16} className="text-forest-600" /> {t.hero.consent}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm text-ink-600 lg:justify-start">
+              <span className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 shadow-sm backdrop-blur-sm">
+                <ShieldCheck size={18} className="text-forest-600" /> 
+                <span className="font-semibold">{t.hero.consent}</span>
               </span>
-              <span className="flex items-center gap-2">
-                <BadgeCheck size={16} className="text-forest-600" /> {t.hero.verified}
+              <span className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 shadow-sm backdrop-blur-sm">
+                <BadgeCheck size={18} className="text-forest-600" /> 
+                <span className="font-semibold">{t.hero.verified}</span>
               </span>
             </div>
             </div>
@@ -506,41 +523,49 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="roles" className="relative z-[1] mx-auto max-w-6xl scroll-mt-24 px-4 py-12 sm:py-14">
-          <p className="text-center text-xs font-semibold uppercase tracking-wide text-forest-600">{t.modal.kicker}</p>
-          <h2 className="mt-2 text-center font-serif text-2xl font-semibold text-ink-900 sm:text-3xl">{t.modal.choose}</h2>
-          <p className="mx-auto mt-2 max-w-lg text-center text-sm text-ink-500">{t.modal.then}</p>
-          <div className="mt-8">
+        <section id="roles" className="relative z-[1] mx-auto max-w-6xl scroll-mt-24 px-4 py-16 sm:py-20">
+          <div className="text-center">
+            <p className="text-xs font-bold uppercase tracking-wider text-forest-700">{t.modal.kicker}</p>
+            <h2 className="mt-3 font-serif text-3xl font-bold text-ink-900 sm:text-4xl">{t.modal.choose}</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-base text-ink-600">{t.modal.then}</p>
+          </div>
+          <div className="mt-10">
             <RoleTiles labels={roleLabels} startLabel={t.workspaces.start} onPick={startEntry} />
           </div>
         </section>
 
-        <section className="relative z-[1] border-y border-slate-200 bg-white/90 py-10 backdrop-blur-sm">
-          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-4 sm:grid-cols-4">
+        <section className="relative z-[1] border-y-2 border-forest-100 bg-gradient-to-r from-forest-50/50 via-white to-saffron-50/50 py-12 backdrop-blur-sm">
+          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-4 sm:grid-cols-4">
             {t.stats.map(s => (
-              <div key={s.l} className="text-center">
-                <p className="font-serif text-2xl font-semibold tabular-nums text-forest-800 sm:text-3xl">
+              <div key={s.l} className="group text-center">
+                <p className="font-serif text-3xl font-bold tabular-nums text-forest-700 transition-all duration-300 group-hover:scale-110 sm:text-4xl">
                   <CountUp value={s.n} />
+                  <span className="text-saffron-600">+</span>
                 </p>
-                <p className="mt-1 text-xs font-medium text-ink-500 sm:text-sm">{s.l}</p>
+                <p className="mt-2 text-xs font-semibold text-ink-600 sm:text-sm">{s.l}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section id="partners" className="scroll-mt-24 py-12">
+        <section id="partners" className="scroll-mt-24 bg-white py-16">
           <div className="mx-auto max-w-6xl px-4">
-            <p className="text-center text-xs font-semibold uppercase tracking-wide text-saffron-600">{t.partners.kicker}</p>
-            <h2 className="mt-2 text-center text-lg font-bold text-ink-900 sm:text-xl">{t.partners.title}</h2>
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="text-center">
+              <p className="text-xs font-bold uppercase tracking-wider text-saffron-700">{t.partners.kicker}</p>
+              <h2 className="mt-3 text-2xl font-bold text-ink-900 sm:text-3xl">{t.partners.title}</h2>
+            </div>
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
               {PARTNERS.map(p => (
                 <article
                   key={p.ab}
-                  className="card group flex flex-col items-center px-3 py-4 text-center transition hover:-translate-y-0.5 hover:border-forest-200 hover:shadow-md"
+                  className="group relative overflow-hidden rounded-xl border-2 border-slate-200 bg-gradient-to-br from-white to-forest-50/30 px-4 py-6 text-center shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-forest-300 hover:shadow-xl"
                 >
-                  <span className="text-sm font-bold tracking-wide text-forest-800">{p.ab}</span>
-                  <span className="mt-1 line-clamp-2 text-[11px] leading-snug text-ink-500">{p.name}</span>
-                  <span className="mt-1 text-[10px] text-ink-500">{p.city}</span>
+                  <div className="absolute inset-0 bg-gradient-to-br from-forest-500/0 to-forest-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="relative">
+                    <span className="text-base font-extrabold tracking-wide text-forest-800">{p.ab}</span>
+                    <span className="mt-2 block line-clamp-2 text-[11px] font-medium leading-snug text-ink-600">{p.name}</span>
+                    <span className="mt-1 block text-[10px] font-semibold text-saffron-600">{p.city}</span>
+                  </div>
                 </article>
               ))}
             </div>
@@ -608,29 +633,32 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="features" className="scroll-mt-24 border-y border-slate-200 bg-white py-16">
+        <section id="features" className="scroll-mt-24 border-y-2 border-forest-100 bg-gradient-to-b from-white via-forest-50/20 to-white py-20">
           <div className="mx-auto max-w-6xl px-4">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="font-serif text-2xl font-semibold text-ink-900 sm:text-3xl">{t.features.title}</h2>
-              <p className="mt-2 text-sm text-ink-500">{t.features.subtitle}</p>
+              <h2 className="font-serif text-3xl font-bold text-ink-900 sm:text-4xl">{t.features.title}</h2>
+              <p className="mt-3 text-base text-ink-600">{t.features.subtitle}</p>
             </div>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {t.features.items.map((p, i) => {
                 const Icon = FEATURE_ICONS[i] ?? Brain;
                 return (
                   <motion.article
                     key={p.t}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: i * 0.05 }}
-                    className="card-hover p-6"
+                    transition={{ delay: i * 0.08 }}
+                    className="group relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-forest-300 hover:shadow-2xl"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest-50 text-forest-700">
-                      <Icon size={20} />
+                    <div className="absolute top-0 right-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-gradient-to-br from-forest-400/10 to-saffron-400/10 blur-2xl transition-transform duration-300 group-hover:scale-150" />
+                    <div className="relative">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-forest-600 to-forest-700 text-white shadow-lg transition-transform duration-300 group-hover:scale-110">
+                        <Icon size={24} />
+                      </div>
+                      <h3 className="mt-5 text-lg font-bold text-ink-900">{p.t}</h3>
+                      <p className="mt-3 text-sm leading-relaxed text-ink-600">{p.b}</p>
                     </div>
-                    <h3 className="mt-4 font-semibold text-ink-900">{p.t}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-ink-500">{p.b}</p>
                   </motion.article>
                 );
               })}

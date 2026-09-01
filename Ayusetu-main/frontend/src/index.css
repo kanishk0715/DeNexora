@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  color: #1c1410;
-  background: #faf6f0;
+  color: #0f172a;
+  background: #ffffff;
 }
 
 html {
@@ -21,16 +21,16 @@ body {
   min-width: 320px;
   min-height: 100vh;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  background:
-    radial-gradient(1200px 420px at 10% -10%, rgba(22, 85, 61, 0.06), transparent 55%),
-    radial-gradient(900px 380px at 100% 0%, rgba(196, 92, 38, 0.05), transparent 50%),
-    #faf6f0;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 50%, #fff7ed 100%);
+  background-attachment: fixed;
   font-feature-settings: 'ss01' on, 'cv11' on;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: #d5eadc;
-  color: #0c2b21;
+  background: #bbf7d0;
+  color: #14532d;
 }
 
 #root {
@@ -39,38 +39,52 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-forest-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-forest-700 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-forest-600 to-forest-700 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-forest-600/30 transition-all duration-300 hover:shadow-xl hover:shadow-forest-600/40 hover:-translate-y-0.5 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-forest-800 transition duration-200 hover:border-forest-200 hover:bg-forest-50 active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border-2 border-forest-200 bg-white px-6 py-3 text-sm font-semibold text-forest-800 shadow-sm transition-all duration-300 hover:border-forest-400 hover:bg-forest-50 hover:shadow-md active:scale-[0.98];
   }
   .input {
-    @apply w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-ink-900 placeholder:text-slate-400 transition focus:border-forest-500 focus:outline-none focus:ring-4 focus:ring-forest-500/15;
+    @apply w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:border-forest-500 focus:outline-none focus:ring-4 focus:ring-forest-500/20 hover:border-slate-300;
   }
   .card {
-    @apply rounded-2xl border border-slate-200/80 bg-white shadow-card;
+    @apply rounded-2xl border border-slate-200 bg-white shadow-card;
   }
   .card-hover {
-    @apply card transition duration-200 hover:-translate-y-1 hover:border-forest-200 hover:shadow-md;
+    @apply rounded-2xl border border-slate-200 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-forest-300 hover:shadow-xl;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
+  }
+  .badge-primary {
+    @apply badge bg-forest-100 text-forest-800 ring-1 ring-forest-200;
+  }
+  .badge-secondary {
+    @apply badge bg-saffron-100 text-saffron-800 ring-1 ring-saffron-200;
+  }
+  .badge-accent {
+    @apply badge bg-blue-100 text-blue-800 ring-1 ring-blue-200;
   }
 }
 
 :focus-visible {
-  outline: 2px solid #16553d;
-  outline-offset: 2px;
+  outline: 2px solid #16a34a;
+  outline-offset: 3px;
+  border-radius: 8px;
 }
 
 .progress-line {
-  height: 6px;
+  height: 8px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #124433, #1f6b47 55%, #c45c26);
-  transition: width 0.45s ease;
+  background: linear-gradient(90deg, #16a34a 0%, #22c55e 50%, #ea580c 100%);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #f0e6d8 0%, #faf6f0 50%, #f0e6d8 100%);
+  background: linear-gradient(90deg, #f1f5f9 0%, #ffffff 50%, #f1f5f9 100%);
   background-size: 200% 100%;
-  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
 @keyframes skeleton-shimmer {
@@ -85,6 +99,19 @@ body {
 .ledger-num {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #ea580c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 @media print {

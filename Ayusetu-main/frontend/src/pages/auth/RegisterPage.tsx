@@ -47,9 +47,9 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await api.post('/auth/register', form);
-      setSuccess('Registration successful. If email is not configured, use prototype preview to continue.');
+      setSuccess('Registration successful. Check your email to verify your account.');
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Server not running — you can still explore the prototype.';
+      const msg = err.response?.data?.message || 'Server connection error. Please try again later.';
       const fieldErrors = err.response?.data?.errors;
       setError(fieldErrors ? fieldErrors.map((x: any) => x.message).join(', ') : msg);
     } finally {
@@ -128,7 +128,7 @@ export default function RegisterPage() {
             }}
             className="mt-4 w-full text-center text-sm font-semibold text-forest-700 hover:underline"
           >
-            Skip to prototype as this role
+            Continue as demo user
           </button>
         </div>
     </AuthFrame>

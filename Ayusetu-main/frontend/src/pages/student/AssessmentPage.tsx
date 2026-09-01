@@ -92,7 +92,7 @@ export default function AssessmentPage() {
         <div className="card p-6">
           <p className="text-sm text-ink-500">
             {paper.stream && paper.stream !== 'BAMS'
-              ? `${paper.stream} subject banks are not in this prototype yet. Select BAMS in Get started to take Kayachikitsa, Panchakarma and the other BAMS papers.`
+              ? `${paper.stream} subject assessments are coming soon. Select BAMS in Get started to take Kayachikitsa, Panchakarma and other BAMS papers.`
               : 'No subjects selected. Open Get started, choose Student → BAMS, then pick the specialties to assess.'}
           </p>
           <Link to="/" className="btn-primary mt-5">

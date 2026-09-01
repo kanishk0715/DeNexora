@@ -142,12 +142,12 @@ export function SearchTrigger() {
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event('ayusetu-palette'))}
-      className="hidden items-center gap-2 rounded-xl border border-slate-200 bg-cream-100 px-3 py-1.5 text-sm text-ink-500 hover:border-forest-200 md:flex"
+      className="hidden items-center gap-2 rounded-xl border border-forest-200 bg-white px-3 py-1.5 text-sm font-medium text-ink-600 shadow-sm hover:border-forest-400 hover:bg-forest-50 md:flex"
       aria-label="Search internships"
     >
-      <Search size={14} />
+      <Search size={14} className="text-forest-600" />
       <span>Search internships</span>
-      <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold">/</kbd>
+      <kbd className="rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-ink-500">/</kbd>
     </button>
   );
 }
