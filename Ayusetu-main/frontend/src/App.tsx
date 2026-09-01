@@ -23,7 +23,6 @@ import FacultyHubPage from './pages/faculty/FacultyHubPage';
 import PublicPortfolioPage from './pages/PublicPortfolioPage';
 import LoginPage from './pages/auth/LoginPage';
 import RoleLoginPage from './pages/auth/RoleLoginPage';
-import StudentLogin from './pages/auth/StudentLogin';
 import FacultyHospitalLogin from './pages/auth/FacultyHospitalLogin';
 import InstituteMinistryLogin from './pages/auth/InstituteMinistryLogin';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -46,7 +45,6 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/login/student" element={<StudentLogin />} />
           <Route path="/login/faculty-hospital" element={<FacultyHospitalLogin />} />
           <Route path="/login/institute-ministry" element={<InstituteMinistryLogin />} />
           <Route path="/login/:gate" element={<RoleLoginPage />} />
