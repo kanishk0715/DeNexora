@@ -21,15 +21,11 @@ import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminVerificationsPage from './pages/admin/AdminVerificationsPage';
 import FacultyHubPage from './pages/faculty/FacultyHubPage';
 import PublicPortfolioPage from './pages/PublicPortfolioPage';
-<<<<<<< HEAD
-// import LoginPage from './pages/auth/LoginPage';
+import LoginPage from './pages/auth/LoginPage';
+import RoleLoginPage from './pages/auth/RoleLoginPage';
 import StudentLogin from './pages/auth/StudentLogin';
 import FacultyHospitalLogin from './pages/auth/FacultyHospitalLogin';
 import InstituteMinistryLogin from './pages/auth/InstituteMinistryLogin';
-=======
-import LoginPage from './pages/auth/LoginPage';
-import RoleLoginPage from './pages/auth/RoleLoginPage';
->>>>>>> 2652aa3ab5b0111cb25f4ab1df884001c4fe0b8c
 import RegisterPage from './pages/auth/RegisterPage';
 import AboutPage from './pages/AboutPage';
 import { LocaleProvider } from './contexts/LocaleContext';
@@ -49,15 +45,11 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutPage />} />
-<<<<<<< HEAD
-          <Route path="/login" element={<StudentLogin />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/login/student" element={<StudentLogin />} />
           <Route path="/login/faculty-hospital" element={<FacultyHospitalLogin />} />
           <Route path="/login/institute-ministry" element={<InstituteMinistryLogin />} />
-=======
-          <Route path="/login" element={<LoginPage />} />
           <Route path="/login/:gate" element={<RoleLoginPage />} />
->>>>>>> 2652aa3ab5b0111cb25f4ab1df884001c4fe0b8c
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/p/:slug" element={<PublicPortfolioPage />} />
 
