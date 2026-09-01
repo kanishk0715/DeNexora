@@ -22,7 +22,7 @@ export function IndiaAppBar({
   innerClassName?: string;
 }) {
   return (
-    <header className="sticky top-0 z-40 shrink-0 border-b border-[#e4f4ea] bg-white/90 shadow-[0_1px_0_rgba(22,85,61,0.04)] backdrop-blur-md">
+    <header className="sticky top-0 z-40 shrink-0 border-b border-[#084830] bg-[#0b5c3a] shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
       <div className={`flex items-center justify-between gap-3 py-3 sm:py-3.5 ${innerClassName}`}>{children}</div>
       {after}
     </header>

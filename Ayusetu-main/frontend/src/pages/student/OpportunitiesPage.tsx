@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bookmark, BookmarkCheck, GitCompare, MapPin, Sparkles } from 'lucide-react';
+import { Bookmark, BookmarkCheck, GitCompare, MapPin, Sparkles, Brain } from 'lucide-react';
 import { PageHeader, MatchBar, EmptyState, Modal, SkillChipPicker } from '../../components/ui/Primitives';
-import { DEMO_OPPORTUNITIES } from '../../data/demo';
-import { api } from '../../lib/api';
+import { DEMO_OPPORTUNITIES, DEMO_SKILLS } from '../../data/demo';
+import { api, semanticProfileMatch } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -33,9 +33,11 @@ export default function OpportunitiesPage() {
   const [applied, setApplied] = useState<string[]>([]);
   const [consent, setConsent] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [semanticRanked, setSemanticRanked] = useState<string[] | null>(null);
+  const [semanticBusy, setSemanticBusy] = useState(false);
 
   const list = useMemo(() => {
-    return DEMO_OPPORTUNITIES.filter(o => {
+    const filtered = DEMO_OPPORTUNITIES.filter(o => {
       const q = query.toLowerCase();
       const hit =
         !q ||
@@ -49,7 +51,15 @@ export default function OpportunitiesPage() {
       const s = !savedOnly || saved.includes(o._id);
       return hit && t && c && sk && s;
     });
-  }, [query, type, city, skills, savedOnly, saved]);
+
+    // If semantic ranking is active, reorder by semantic similarity
+    if (semanticRanked) {
+      return [...filtered].sort(
+        (a, b) => semanticRanked.indexOf(a._id) - semanticRanked.indexOf(b._id)
+      );
+    }
+    return filtered;
+  }, [query, type, city, skills, savedOnly, saved, semanticRanked]);
 
   const current = DEMO_OPPORTUNITIES.find(o => o._id === selected);
   const pair = DEMO_OPPORTUNITIES.filter(o => compare.includes(o._id));
@@ -61,6 +71,28 @@ export default function OpportunitiesPage() {
       toast('success', prev.includes(id) ? 'Removed from saved' : 'Saved to bookmarks');
       return next;
     });
+  };
+
+  // Build a text profile from demo skills, then rank opportunities semantically
+  const runSemanticRank = async () => {
+    if (semanticRanked) {
+      setSemanticRanked(null);
+      return;
+    }
+    setSemanticBusy(true);
+    const profileText = DEMO_SKILLS.map(s => `${s.name} (score ${s.score})`).join(', ');
+    const oppDescriptions = DEMO_OPPORTUNITIES.map(o => ({
+      id: o._id,
+      description: `${o.title}. ${o.description} Required: ${o.requiredSkills.map(s => s.name).join(', ')}.`,
+    }));
+    const matches = await semanticProfileMatch(profileText, oppDescriptions, 10);
+    if (matches.length > 0) {
+      setSemanticRanked(matches.map(m => m.opportunity_id));
+      toast('success', 'Opportunities reordered by semantic match to your profile.');
+    } else {
+      toast('info', 'AI service not reachable — start the AI service and try again.');
+    }
+    setSemanticBusy(false);
   };
 
   const toggleCompare = (id: string) => {
@@ -102,14 +134,25 @@ export default function OpportunitiesPage() {
         title="Internships & placements"
         subtitle="Filter by city and multiple skills, save openings, or compare two side by side."
         actions={
-          <button
-            type="button"
-            className="btn-secondary"
-            disabled={compare.length !== 2}
-            onClick={() => setShowCompare(true)}
-          >
-            <GitCompare size={16} /> Compare {compare.length}/2
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className={`btn-secondary ${semanticRanked ? 'border-forest-400 text-forest-800' : ''}`}
+              onClick={() => void runSemanticRank()}
+              disabled={semanticBusy}
+            >
+              <Brain size={16} className={semanticBusy ? 'animate-pulse' : ''} />
+              {semanticBusy ? 'Matching…' : semanticRanked ? 'Clear AI rank' : 'AI best match'}
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              disabled={compare.length !== 2}
+              onClick={() => setShowCompare(true)}
+            >
+              <GitCompare size={16} /> Compare {compare.length}/2
+            </button>
+          </div>
         }
       />
       <div className="mb-4 flex flex-wrap gap-2">
@@ -191,6 +234,11 @@ export default function OpportunitiesPage() {
                     {o.matchScore >= 85 && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-forest-50 px-2 py-0.5 text-[11px] font-semibold text-forest-800">
                         <Sparkles size={12} /> Strong fit
+                      </span>
+                    )}
+                    {semanticRanked && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-cream-200 px-2 py-0.5 text-[11px] font-semibold text-ink-700">
+                        <Brain size={11} /> #{semanticRanked.indexOf(o._id) + 1} AI rank
                       </span>
                     )}
                     <label className="ml-auto inline-flex items-center gap-1.5 text-xs text-ink-500">

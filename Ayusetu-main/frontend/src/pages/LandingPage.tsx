@@ -439,7 +439,6 @@ export default function LandingPage() {
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(250,246,240,0.70)_0%,_rgba(250,246,240,0.42)_50%,_rgba(250,246,240,0.18)_100%)]" />
             <div className="absolute inset-0 bg-gradient-to-b from-cream-100/25 via-transparent to-cream-100" />
           </div>
-          <div className="relative h-1.5 bg-[linear-gradient(90deg,_#c45c26_0%,_#c45c26_34%,_#faf6f0_34%,_#faf6f0_66%,_#16553d_66%)]" />
           <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-12 lg:grid-cols-2 lg:pb-20 lg:pt-16">
             <div className="text-center lg:text-left">
             <motion.p

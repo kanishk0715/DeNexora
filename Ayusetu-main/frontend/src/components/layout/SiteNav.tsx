@@ -13,10 +13,7 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const onLanding = location.pathname === '/';
   const c = COPY[lang].nav;
-
-  const href = (hash: string) => (onLanding ? `#${hash}` : `/#${hash}`);
 
   const start = () => {
     setOpen(false);
@@ -38,40 +35,51 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
     { hash: 'workspaces', label: c.workspaces },
   ];
 
+  const section = location.hash.replace(/^#/, '');
+  const isActive = (l: (typeof links)[number]) => {
+    if (l.to === '/') return location.pathname === '/' && !section;
+    if (l.to) return location.pathname === l.to;
+    return location.pathname === '/' && section === l.hash;
+  };
+
   const NavItems = ({ onClick }: { onClick?: () => void }) => (
     <>
-      {links.map(l =>
-        l.to ? (
+      {links.map(l => {
+        const active = isActive(l);
+        const className = `rounded-lg px-4 py-2 text-base font-semibold text-white transition hover:bg-white/15 ${
+          active ? 'bg-white/20 shadow-sm' : ''
+        }`;
+        return l.to ? (
           <Link
             key={l.to}
-            to={l.to}
+            to={l.to === '/' ? { pathname: '/', hash: '' } : l.to}
             onClick={onClick}
-            className={`rounded-lg px-4 py-2 text-base font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee] ${
-              location.pathname === l.to ? 'bg-[#e8f3ee] shadow-sm' : ''
-            }`}
+            className={className}
+            aria-current={active ? 'page' : undefined}
           >
             {l.label}
           </Link>
         ) : (
-          <a
+          <Link
             key={l.hash}
-            href={href(l.hash!)}
+            to={{ pathname: '/', hash: l.hash }}
             onClick={onClick}
-            className="rounded-lg px-4 py-2 text-base font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee]"
+            className={className}
+            aria-current={active ? 'page' : undefined}
           >
             {l.label}
-          </a>
-        ),
-      )}
+          </Link>
+        );
+      })}
     </>
   );
 
   return (
     <IndiaAppBar
-      innerClassName="mx-auto max-w-7xl px-4"
+      innerClassName="w-full px-4"
       after={
         open ? (
-          <div className="border-b border-[#e4f4ea] bg-white px-4 py-3 lg:hidden">
+          <div className="border-b border-[#084830] bg-[#0b5c3a] px-4 py-3 lg:hidden">
             <nav className="flex flex-col gap-1" aria-label="Mobile">
               <NavItems onClick={() => setOpen(false)} />
             </nav>
@@ -79,29 +87,26 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
         ) : null
       }
     >
-      {/* Logo - Left Side */}
-      <Link to="/" className="flex shrink-0 items-center" aria-label="Ministry of Ayush home">
+      <Link to="/" className="ml-[0.5in] flex shrink-0 items-center" aria-label="Ministry of Ayush home">
         <MinistryLogo className="h-10 w-auto sm:h-11" />
       </Link>
 
-      {/* Navigation - Center */}
-      <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex" aria-label="Primary">
+      <nav className="hidden flex-1 items-center justify-end gap-1 pr-[1in] lg:flex" aria-label="Primary">
         <NavItems />
       </nav>
 
-      {/* Actions - far right of the header */}
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <LanguageSelect />
         {user ? (
           <>
             <button
               type="button"
-              className="hidden rounded-lg border border-[#0b5c3a] bg-white px-4 py-2 text-base font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee] sm:block"
+              className="hidden rounded-lg border border-white/60 bg-transparent px-4 py-2 text-base font-semibold text-white transition hover:bg-white/15 sm:block"
               onClick={handleLogout}
             >
               Logout
             </button>
-            <Link to="/dashboard" className="btn-primary !bg-[#0b5c3a] px-4 py-2 text-base font-semibold hover:!bg-[#084830]">
+            <Link to="/dashboard" className="rounded-lg bg-white px-4 py-2 text-base font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee]">
               {c.openWorkspace}
             </Link>
           </>
@@ -109,13 +114,13 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
           <>
             <Link
               to="/login"
-              className="hidden rounded-lg border border-[#0b5c3a] bg-white px-4 py-2 text-base font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee] sm:block"
+              className="hidden rounded-lg border border-white/60 bg-transparent px-4 py-2 text-base font-semibold text-white transition hover:bg-white/15 sm:block"
             >
               {c.login}
             </Link>
             <button
               type="button"
-              className="btn-primary !bg-[#0b5c3a] px-4 py-2 text-base font-semibold hover:!bg-[#084830]"
+              className="rounded-lg bg-white px-4 py-2 text-base font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee]"
               onClick={start}
             >
               {c.getStarted}
@@ -124,7 +129,7 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
         )}
         <button
           type="button"
-          className="rounded-lg p-2 text-[#0b5c3a] hover:bg-[#e8f3ee] lg:hidden"
+          className="rounded-lg p-2 text-white hover:bg-white/15 lg:hidden"
           aria-label={open ? 'Close menu' : 'Open menu'}
           onClick={() => setOpen(v => !v)}
         >

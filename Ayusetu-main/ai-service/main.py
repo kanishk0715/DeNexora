@@ -1,6 +1,7 @@
 """
 FastAPI AI Service for Academia-Industry Collaboration Portal
 Handles skill analysis, recommendations, resume parsing, and match scoring
+Uses NLP embeddings for semantic skill matching
 """
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
@@ -11,6 +12,7 @@ import os
 import re
 import io
 from dotenv import load_dotenv
+from embedding_service import get_embedding_service
 
 load_dotenv()
 
@@ -91,6 +93,30 @@ class RecommendationRequest(BaseModel):
     skill_gaps: List[Dict[str, Any]]  # [{skill_name, gap, gap_priority}]
     opportunities: List[OpportunityForRecommendation]
     is_placed: Optional[bool] = False
+
+
+class SemanticSkillMatchRequest(BaseModel):
+    query_skill: str
+    candidate_skills: List[str]
+    threshold: Optional[float] = 0.7
+    top_k: Optional[int] = 5
+
+
+class SemanticResumeRequest(BaseModel):
+    use_semantic: Optional[bool] = True
+    confidence_threshold: Optional[float] = 0.65
+
+
+class SkillRelationshipRequest(BaseModel):
+    skill: str
+    all_skills: List[str]
+    top_k: Optional[int] = 5
+
+
+class StudentProfileMatchRequest(BaseModel):
+    student_profile: str
+    opportunity_descriptions: List[Dict[str, str]]  # [{id, description}]
+    top_k: Optional[int] = 10
 
 
 # ─── Skill Gap Scoring Logic (mirrors Node.js scoring.ts) ────────────────────
@@ -346,11 +372,16 @@ async def get_recommendations(request: RecommendationRequest):
 
 
 @app.post("/ai/extract-resume-skills")
-async def extract_resume_skills(file: UploadFile = File(...)):
+async def extract_resume_skills(file: UploadFile = File(...), use_semantic: bool = True, confidence_threshold: float = 0.65):
     """
-    Parse resume and extract normalized skills
+    Parse resume and extract normalized skills using NLP embeddings
     Requirements: 14.1, 14.2, 14.3, 9.1, 9.3
     Property 11: Normalization idempotence
+    
+    Args:
+        file: Resume file (PDF, DOCX, or TXT)
+        use_semantic: Use semantic matching (default: True)
+        confidence_threshold: Minimum confidence for semantic matches (default: 0.65)
     """
     content = await file.read()
     text = ""
@@ -376,13 +407,178 @@ async def extract_resume_skills(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to parse file: {str(e)}")
 
-    skills = extract_skills_from_text(text)
+    # Keyword-based extraction (fast, baseline)
+    keyword_skills = extract_skills_from_text(text)
+    
+    result_data = {
+        "extracted_skills": keyword_skills,
+        "count": len(keyword_skills),
+        "method": "keyword"
+    }
+    
+    # Semantic extraction (more accurate, context-aware)
+    if use_semantic:
+        try:
+            embedding_service = get_embedding_service()
+            semantic_results = embedding_service.extract_skills_semantic(
+                text=text,
+                known_skills=KNOWN_SKILLS,
+                threshold=confidence_threshold
+            )
+            
+            # Combine with keyword results
+            semantic_skills = [s["skill"] for s in semantic_results]
+            combined_skills = list(set(keyword_skills + semantic_skills))
+            
+            result_data = {
+                "extracted_skills": combined_skills,
+                "count": len(combined_skills),
+                "method": "semantic+keyword",
+                "semantic_details": semantic_results[:10],  # Top 10 with confidence
+                "keyword_only": keyword_skills,
+                "semantic_only": semantic_skills
+            }
+        except Exception as e:
+            # Fallback to keyword-only if semantic fails
+            result_data["semantic_error"] = str(e)
+            result_data["fallback"] = "keyword_only"
 
     return ApiResponse(
         success=True,
         message="Skills extracted successfully",
-        data={"extracted_skills": skills, "count": len(skills)},
+        data=result_data,
     )
+
+
+@app.post("/ai/semantic-skill-match")
+async def semantic_skill_match(request: SemanticSkillMatchRequest):
+    """
+    Find similar skills using semantic embeddings.
+    Handles typos, abbreviations, and variations.
+    
+    Example: "reactjs" matches "React", "React.js", "React Native"
+    """
+    try:
+        embedding_service = get_embedding_service()
+        matches = embedding_service.find_similar_skills(
+            query_skill=request.query_skill,
+            skill_list=request.candidate_skills,
+            threshold=request.threshold or 0.7,
+            top_k=request.top_k or 5
+        )
+        
+        return ApiResponse(
+            success=True,
+            message=f"Found {len(matches)} similar skills",
+            data={
+                "query": request.query_skill,
+                "matches": [{"skill": skill, "similarity": score} for skill, score in matches]
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Semantic matching failed: {str(e)}")
+
+
+@app.post("/ai/skill-relationships")
+async def get_skill_relationships(request: SkillRelationshipRequest):
+    """
+    Find related skills for skill gap recommendations.
+    Helps students discover complementary skills to learn.
+    
+    Example: "React" → ["JavaScript", "TypeScript", "Node.js", "Redux", "Next.js"]
+    """
+    try:
+        embedding_service = get_embedding_service()
+        related = embedding_service.get_skill_relationships(
+            skill=request.skill,
+            all_skills=request.all_skills,
+            top_k=request.top_k or 5
+        )
+        
+        return ApiResponse(
+            success=True,
+            message=f"Found {len(related)} related skills",
+            data={
+                "skill": request.skill,
+                "related_skills": [{"skill": skill, "similarity": score} for skill, score in related]
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Relationship extraction failed: {str(e)}")
+
+
+@app.post("/ai/semantic-profile-match")
+async def semantic_profile_match(request: StudentProfileMatchRequest):
+    """
+    Match student profile to opportunities using semantic similarity.
+    More intelligent than keyword matching - understands context.
+    
+    Args:
+        student_profile: Text description of student (skills, interests, projects)
+        opportunity_descriptions: List of opportunity descriptions with IDs
+        top_k: Number of top matches to return
+    """
+    try:
+        embedding_service = get_embedding_service()
+        
+        # Extract descriptions and IDs
+        opp_texts = [opp["description"] for opp in request.opportunity_descriptions]
+        opp_ids = [opp["id"] for opp in request.opportunity_descriptions]
+        
+        # Get semantic matches
+        matches = embedding_service.match_student_to_opportunities(
+            student_profile=request.student_profile,
+            opportunity_descriptions=opp_texts,
+            top_k=request.top_k or 10
+        )
+        
+        # Map back to opportunity IDs
+        results = [
+            {
+                "opportunity_id": opp_ids[idx],
+                "similarity": score,
+                "rank": rank + 1
+            }
+            for rank, (idx, score) in enumerate(matches)
+        ]
+        
+        return ApiResponse(
+            success=True,
+            message=f"Found {len(results)} semantic matches",
+            data={"matches": results}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Profile matching failed: {str(e)}")
+
+
+@app.post("/ai/compute-similarity")
+async def compute_text_similarity(text1: str, text2: str):
+    """
+    Compute semantic similarity between two texts.
+    Returns a score between 0 (completely different) and 1 (identical meaning).
+    """
+    try:
+        embedding_service = get_embedding_service()
+        similarity = embedding_service.compute_similarity(text1, text2)
+        
+        return ApiResponse(
+            success=True,
+            message="Similarity computed",
+            data={
+                "text1": text1[:100],  # First 100 chars
+                "text2": text2[:100],
+                "similarity": similarity,
+                "interpretation": (
+                    "very high" if similarity > 0.9 else
+                    "high" if similarity > 0.75 else
+                    "moderate" if similarity > 0.5 else
+                    "low" if similarity > 0.25 else
+                    "very low"
+                )
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Similarity computation failed: {str(e)}")
 
 
 if __name__ == "__main__":

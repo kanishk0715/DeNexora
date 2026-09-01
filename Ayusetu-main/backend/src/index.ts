@@ -10,6 +10,7 @@ import applicationRoutes from './routes/applications';
 import portfolioRoutes from './routes/portfolio';
 import studentRoutes from './routes/students';
 import notificationRoutes from './routes/notifications';
+import aiRoutes from './routes/ai';
 
 // Load environment variables
 dotenv.config();
@@ -39,6 +40,7 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
