@@ -30,6 +30,7 @@ import InstituteMinistryLogin from './pages/auth/InstituteMinistryLogin';
 import RegisterPage from './pages/auth/RegisterPage';
 import AboutPage from './pages/AboutPage';
 import CommunitiesPage from './pages/CommunitiesPage';
+import ExamsJobsPage from './pages/ExamsJobsPage';
 import { LocaleProvider } from './contexts/LocaleContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { CommandPalette } from './components/CommandPalette';
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/communities" element={<CommunitiesPage />} />
+          <Route path="/exams-jobs" element={<ExamsJobsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/login/faculty-hospital" element={<FacultyHospitalLogin />} />
           <Route path="/login/institute-ministry" element={<InstituteMinistryLogin />} />
