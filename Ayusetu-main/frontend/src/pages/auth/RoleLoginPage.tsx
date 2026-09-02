@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthFrame } from '../../components/layout/AuthFrame';
+import { PasswordField } from '../../components/ui/PasswordField';
 import type { User } from '../../types/api';
 
 const GATES = {
@@ -107,19 +108,7 @@ export default function RoleLoginPage() {
               </label>
               <input id="email" className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
             </div>
-            <div>
-              <label htmlFor="password" className="mb-1 block text-sm font-medium text-ink-700">
-                Password
-              </label>
-              <input
-                id="password"
-                className="input"
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-              />
-            </div>
+            <PasswordField value={password} onChange={setPassword} />
             <button type="submit" disabled={loading} className="btn-primary w-full">
               {loading ? 'Signing in…' : 'Sign in'}
             </button>

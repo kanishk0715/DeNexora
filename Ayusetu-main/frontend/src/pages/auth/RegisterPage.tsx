@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthFrame } from '../../components/layout/AuthFrame';
+import { PasswordField } from '../../components/ui/PasswordField';
 
 const ALL_ROLES = [
   { value: 'student', label: 'AYUSH student' },
@@ -68,25 +69,38 @@ export default function RegisterPage() {
             {success && <div className="mt-4 rounded-xl border border-forest-200 bg-forest-50 p-3 text-sm text-forest-800">{success}</div>}
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              {[
-                { id: 'name', label: 'Full name', type: 'text' },
-                { id: 'email', label: 'Email', type: 'email' },
-                { id: 'password', label: 'Password (min. 8 characters)', type: 'password' },
-              ].map(field => (
-                <div key={field.id}>
-                  <label htmlFor={field.id} className="mb-1 block text-sm font-medium text-ink-700">
-                    {field.label}
-                  </label>
-                  <input
-                    id={field.id}
-                    type={field.type}
-                    className="input"
-                    required
-                    value={(form as any)[field.id]}
-                    onChange={e => setForm(f => ({ ...f, [field.id]: e.target.value }))}
-                  />
-                </div>
-              ))}
+              <div>
+                <label htmlFor="name" className="mb-1 block text-sm font-medium text-ink-700">
+                  Full name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  className="input"
+                  required
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label htmlFor="email" className="mb-1 block text-sm font-medium text-ink-700">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  className="input"
+                  required
+                  value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                />
+              </div>
+              <PasswordField
+                label="Password (min. 8 characters)"
+                value={form.password}
+                onChange={password => setForm(f => ({ ...f, password }))}
+                autoComplete="new-password"
+              />
               <div>
                 <label htmlFor="role" className="mb-1 block text-sm font-medium text-ink-700">
                   I am joining as
