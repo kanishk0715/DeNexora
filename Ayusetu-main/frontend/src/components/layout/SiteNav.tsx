@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { IndiaAppBar, MinistryLogo } from '../brand/IndiaMark';
+import { IndiaAppBar, BrandLockup } from '../brand/IndiaMark';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocale } from '../../contexts/LocaleContext';
 import { COPY } from '../../i18n/public';
@@ -87,13 +87,17 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
     return location.pathname === '/' && activeSection === l.hash;
   };
 
-  const NavItems = ({ onClick }: { onClick?: () => void }) => (
+  const NavItems = ({ onClick, stacked }: { onClick?: () => void; stacked?: boolean }) => (
     <>
       {links.map(l => {
         const active = isActive(l);
-        const className = `rounded-lg px-4 py-2 text-base font-semibold text-white transition hover:bg-white/15 ${
-          active ? 'bg-white/20 shadow-sm' : ''
-        }`;
+        const className = stacked
+          ? `block w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-white transition ${
+              active ? 'bg-white/10 font-semibold' : 'hover:bg-white/5'
+            }`
+          : `nav-item relative whitespace-nowrap px-2.5 py-2 text-[13px] font-medium tracking-wide text-white transition-colors sm:px-3 sm:text-sm ${
+              active ? 'is-active font-semibold' : 'hover:text-white/80'
+            }`;
         return l.to ? (
           <Link
             key={l.to}
@@ -121,37 +125,39 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
 
   return (
     <IndiaAppBar
-      innerClassName="w-full px-4"
+      variant="wallpaper"
+      showTiranga={false}
+      innerClassName="mx-auto w-full max-w-[1400px] px-4 sm:px-6"
       after={
         open ? (
-          <div className="border-b border-[#084830] bg-[#0b5c3a] px-4 py-3 lg:hidden">
-            <nav className="flex flex-col gap-1" aria-label="Mobile">
-              <NavItems onClick={() => setOpen(false)} />
+          <div className="nav-wallpaper border-y border-white/15 px-4 py-3 md:hidden">
+            <nav className="mx-auto flex max-w-[1400px] flex-col gap-0.5" aria-label="Mobile">
+              <NavItems stacked onClick={() => setOpen(false)} />
             </nav>
           </div>
         ) : null
       }
     >
-      <Link to="/" className="ml-[0.5in] flex shrink-0 items-center" aria-label="Ministry of Ayush home">
-        <MinistryLogo className="h-10 w-auto sm:h-11" />
+      <Link to="/" className="shrink-0" aria-label="Ministry of Ayush home">
+        <BrandLockup />
       </Link>
 
-      <nav className="hidden flex-1 items-center justify-end gap-1 pr-[1in] lg:flex" aria-label="Primary">
+      <nav className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 md:flex" aria-label="Primary">
         <NavItems />
       </nav>
 
-      <div className="ml-auto flex shrink-0 items-center gap-2">
-        <LanguageSelect />
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <LanguageSelect tone="dark" />
         {user ? (
           <>
             <button
               type="button"
-              className="hidden rounded-lg border border-white/60 bg-transparent px-4 py-2 text-base font-semibold text-white transition hover:bg-white/15 sm:block"
+              className="hidden px-2.5 py-2 text-[13px] font-medium text-white transition hover:text-white/80 sm:block"
               onClick={handleLogout}
             >
               Logout
             </button>
-            <Link to="/dashboard" className="rounded-lg bg-white px-4 py-2 text-base font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee]">
+            <Link to="/dashboard" className="rounded-md border border-white px-3.5 py-2 text-[13px] font-semibold text-white transition hover:bg-white/10">
               {c.openWorkspace}
             </Link>
           </>
@@ -159,13 +165,13 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
           <>
             <Link
               to="/login"
-              className="hidden rounded-lg border border-white/60 bg-transparent px-4 py-2 text-base font-semibold text-white transition hover:bg-white/15 sm:block"
+              className="hidden px-2.5 py-2 text-[13px] font-medium text-white transition hover:text-white/80 sm:block"
             >
               {c.login}
             </Link>
             <button
               type="button"
-              className="rounded-lg bg-white px-4 py-2 text-base font-semibold text-[#0b5c3a] transition hover:bg-[#e8f3ee]"
+              className="rounded-md border border-white px-3.5 py-2 text-[13px] font-semibold text-white transition hover:bg-white/10"
               onClick={start}
             >
               {c.getStarted}
@@ -174,7 +180,7 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
         )}
         <button
           type="button"
-          className="rounded-lg p-2 text-white hover:bg-white/15 lg:hidden"
+          className="rounded-md p-2 text-white hover:bg-white/10 md:hidden"
           aria-label={open ? 'Close menu' : 'Open menu'}
           onClick={() => setOpen(v => !v)}
         >

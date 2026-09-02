@@ -11,6 +11,7 @@ const PERMISSIONS: Record<User['role'], Set<string>> = {
     'view:opportunities',
     'create:applications',
     'view:skills',
+    'view:exams-schemes',
     'edit:profile',
   ]),
   academician: new Set([

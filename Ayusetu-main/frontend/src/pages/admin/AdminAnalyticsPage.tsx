@@ -52,8 +52,8 @@ export default function AdminAnalyticsPage() {
             <XAxis dataKey="state" tick={{ fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={70} />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="internships" fill="#16553d" name="Internships" />
-            <Bar dataKey="jobs" fill="#c45c26" name="Jobs" />
+            <Bar dataKey="internships" fill="#2c4536" name="Internships" />
+            <Bar dataKey="jobs" fill="#927024" name="Jobs" />
           </BarChart>
         </ResponsiveContainer>
       </div>

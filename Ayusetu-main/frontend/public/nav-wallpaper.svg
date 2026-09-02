@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="80" viewBox="0 0 720 80">
+  <rect width="720" height="80" fill="#111111"/>
+  <g fill="#ffffff" opacity="0.28" font-family="Georgia, 'Times New Roman', Times, serif" font-style="italic" font-weight="600">
+    <g id="leaf" fill="none" stroke="#ffffff" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M0 6 C0 2.5 3 0.7 3.6 4.2 C4.2 0.7 7.2 2.5 7.2 6 C7.2 9.5 3.6 10.8 3.6 7.2 C3.6 10.8 0 9.5 0 6Z"/>
+      <path d="M3.6 7.2 V10.8"/>
+    </g>
+    <text x="12" y="28" font-size="8">Ministry of Ayush</text>
+    <use href="#leaf" x="108" y="18"/>
+    <text x="124" y="28" font-size="8">AyuSetu</text>
+    <use href="#leaf" x="170" y="18"/>
+    <text x="186" y="28" font-size="8">Ministry of Ayush</text>
+    <use href="#leaf" x="282" y="18"/>
+    <text x="298" y="28" font-size="8">AyuSetu</text>
+    <use href="#leaf" x="344" y="18"/>
+    <text x="360" y="28" font-size="8">Ministry of Ayush</text>
+    <use href="#leaf" x="456" y="18"/>
+    <text x="472" y="28" font-size="8">AyuSetu</text>
+    <use href="#leaf" x="518" y="18"/>
+    <text x="534" y="28" font-size="8">Ministry of Ayush</text>
+    <use href="#leaf" x="630" y="18"/>
+    <text x="646" y="28" font-size="8">AyuSetu</text>
+
+    <text x="8" y="62" font-size="8">AyuSetu</text>
+    <use href="#leaf" x="54" y="52"/>
+    <text x="70" y="62" font-size="8">Ministry of Ayush</text>
+    <use href="#leaf" x="166" y="52"/>
+    <text x="182" y="62" font-size="8">AyuSetu</text>
+    <use href="#leaf" x="228" y="52"/>
+    <text x="244" y="62" font-size="8">Ministry of Ayush</text>
+    <use href="#leaf" x="340" y="52"/>
+    <text x="356" y="62" font-size="8">AyuSetu</text>
+    <use href="#leaf" x="402" y="52"/>
+    <text x="418" y="62" font-size="8">Ministry of Ayush</text>
+    <use href="#leaf" x="514" y="52"/>
+    <text x="530" y="62" font-size="8">AyuSetu</text>
+    <use href="#leaf" x="576" y="52"/>
+    <text x="592" y="62" font-size="8">Ministry of Ayush</text>
+  </g>
+</svg>

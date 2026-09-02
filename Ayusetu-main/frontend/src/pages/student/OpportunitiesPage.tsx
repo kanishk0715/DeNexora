@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Bookmark, BookmarkCheck, GitCompare, MapPin, Sparkles, Brain } from 'lucide-react';
-import { PageHeader, MatchBar, EmptyState, Modal, SkillChipPicker } from '../../components/ui/Primitives';
+import { PageHeader, MatchBar, EmptyState, Modal, SkillChipPicker, WorkspaceBack } from '../../components/ui/Primitives';
 import { DEMO_OPPORTUNITIES, DEMO_SKILLS } from '../../data/demo';
 import { api, semanticProfileMatch, explainOpportunityMatch } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -142,6 +142,7 @@ export default function OpportunitiesPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
+      <WorkspaceBack to="/assessment" label="Back to scores" />
       <PageHeader
         kicker="Industry requirement portal"
         title="Internships & placements"

@@ -5,13 +5,13 @@ export function ReadinessRing({ value, label = 'Readiness' }: { value: number; l
   return (
     <div className="relative mx-auto h-36 w-36">
       <svg viewBox="0 0 128 128" className="h-full w-full -rotate-90">
-        <circle cx="64" cy="64" r={r} fill="none" stroke="#e7ebf1" strokeWidth="8" />
+        <circle cx="64" cy="64" r={r} fill="none" stroke="#e4eadc" strokeWidth="8" />
         <circle
           cx="64"
           cy="64"
           r={r}
           fill="none"
-          stroke="#16553d"
+          stroke="#2c4536"
           strokeWidth="8"
           strokeLinecap="round"
           strokeDasharray={c}

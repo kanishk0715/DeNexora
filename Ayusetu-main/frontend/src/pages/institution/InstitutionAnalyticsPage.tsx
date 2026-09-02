@@ -22,8 +22,8 @@ export default function InstitutionAnalyticsPage() {
             <XAxis dataKey="skill" tick={{ fontSize: 11 }} interval={0} angle={-16} textAnchor="end" height={72} />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="demand" fill="#c45c26" name="Demand" />
-            <Bar dataKey="supply" fill="#16553d" name="Supply" />
+            <Bar dataKey="demand" fill="#927024" name="Demand" />
+            <Bar dataKey="supply" fill="#2c4536" name="Supply" />
           </BarChart>
         </ResponsiveContainer>
       </div>

@@ -9,7 +9,7 @@ export function SiteFooter() {
   const n = COPY[lang].nav;
 
   return (
-    <footer className="border-t border-slate-200 bg-gradient-to-b from-white to-cream-50">
+    <footer className="border-t border-forest-100 bg-gradient-to-b from-cream-50 to-forest-50">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div className="sm:col-span-2 lg:col-span-1">
           <Logo />

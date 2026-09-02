@@ -41,7 +41,7 @@ export default function LoginPage() {
                 <Link
                   key={p.to}
                   to={p.to}
-                  className="group flex items-start gap-3 rounded-xl border border-slate-200 p-4 text-left transition hover:border-forest-400 hover:bg-forest-50"
+                  className="group flex items-start gap-3 rounded-xl border border-slate-200 p-4 text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-forest-400 hover:bg-forest-50 hover:shadow-md"
                 >
                   <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-700 group-hover:bg-white">
                     <Icon size={18} />

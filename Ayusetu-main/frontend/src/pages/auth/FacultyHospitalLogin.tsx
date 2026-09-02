@@ -29,17 +29,17 @@ export default function FacultyHospitalLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-orange-50 to-white">
+    <div className="min-h-screen bg-transparent">
       <SiteNav />
       <div className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <div className="rounded-2xl border-2 border-purple-500 bg-white p-8 shadow-xl">
+          <div className="card p-8">
             <div className="mb-6 text-center">
               <div className="mx-auto mb-4 flex gap-2 justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-500">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-forest-700">
                   <Users className="h-8 w-8 text-white" />
                 </div>
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-500">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-saffron-600">
                   <Building2 className="h-8 w-8 text-white" />
                 </div>
               </div>
@@ -64,7 +64,7 @@ export default function FacultyHospitalLogin() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border-2 border-gray-200 py-3 pl-10 pr-4 focus:border-purple-500 focus:outline-none"
+                    className="input py-3 pl-10 pr-4"
                     placeholder="faculty@institution.edu"
                     required
                   />
@@ -79,7 +79,7 @@ export default function FacultyHospitalLogin() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border-2 border-gray-200 py-3 pl-10 pr-12 focus:border-purple-500 focus:outline-none"
+                    className="input py-3 pl-10 pr-12"
                     placeholder="Enter your password"
                     required
                   />
@@ -96,7 +96,7 @@ export default function FacultyHospitalLogin() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-lg bg-gradient-to-r from-purple-500 to-orange-500 py-3 font-semibold text-white transition hover:from-purple-600 hover:to-orange-600 disabled:opacity-50"
+                className="btn-primary w-full"
               >
                 {loading ? 'Signing in...' : 'Sign In'}
               </button>
@@ -104,7 +104,7 @@ export default function FacultyHospitalLogin() {
 
             <div className="mt-6 text-center text-sm text-gray-600">
               Don't have an account?{' '}
-              <Link to="/register" className="font-semibold text-purple-500 hover:underline">
+              <Link to="/register" className="font-semibold text-forest-700 hover:underline">
                 Register
               </Link>
             </div>

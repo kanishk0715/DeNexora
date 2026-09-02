@@ -1,6 +1,38 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+export function WorkspaceBack({ to, fallback = '/dashboard', label = 'Back' }: { to?: string; fallback?: string; label?: string }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from;
+
+  const go = () => {
+    if (to) {
+      navigate(to);
+      return;
+    }
+    if (from) {
+      navigate(from);
+      return;
+    }
+    const idx = (window.history.state as { idx?: number } | null)?.idx;
+    if (typeof idx === 'number' && idx > 0) navigate(-1);
+    else navigate(fallback);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={go}
+      className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-forest-800 transition hover:text-forest-950"
+    >
+      <ArrowLeft size={16} aria-hidden />
+      {label}
+    </button>
+  );
+}
 
 export function PageHeader({
   kicker,
@@ -14,14 +46,19 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <motion.div
+      className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+    >
       <div>
-        {kicker && <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-forest-600">{kicker}</p>}
+        {kicker && <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-forest-600">{kicker}</p>}
         <h1 className="font-serif text-3xl font-semibold tracking-tight text-ink-900 sm:text-[2.05rem]">{title}</h1>
         {subtitle && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-500">{subtitle}</p>}
       </div>
       {actions}
-    </div>
+    </motion.div>
   );
 }
 
@@ -63,11 +100,11 @@ export function StatusBadge({ status }: { status: string }) {
 
 export function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="card-hover p-5">
+    <motion.div className="card-hover p-5" whileHover={{ y: -2 }} transition={{ type: 'spring', stiffness: 380, damping: 28 }}>
       <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">{label}</p>
       <p className="mt-2 font-serif text-3xl font-semibold tabular-nums text-forest-800">{value}</p>
       {hint && <p className="mt-1 text-xs text-ink-500">{hint}</p>}
-    </div>
+    </motion.div>
   );
 }
 

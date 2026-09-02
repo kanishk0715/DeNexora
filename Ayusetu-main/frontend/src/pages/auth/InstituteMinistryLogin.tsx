@@ -29,17 +29,17 @@ export default function InstituteMinistryLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-red-50 to-white">
+    <div className="min-h-screen bg-transparent">
       <SiteNav />
       <div className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <div className="rounded-2xl border-2 border-green-500 bg-white p-8 shadow-xl">
+          <div className="card p-8">
             <div className="mb-6 text-center">
               <div className="mx-auto mb-4 flex gap-2 justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-forest-700">
                   <School className="h-8 w-8 text-white" />
                 </div>
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-saffron-600">
                   <Shield className="h-8 w-8 text-white" />
                 </div>
               </div>
@@ -66,7 +66,7 @@ export default function InstituteMinistryLogin() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border-2 border-gray-200 py-3 pl-10 pr-4 focus:border-green-500 focus:outline-none"
+                    className="input py-3 pl-10 pr-4"
                     placeholder="admin@ayush.gov.in"
                     required
                   />
@@ -81,7 +81,7 @@ export default function InstituteMinistryLogin() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border-2 border-gray-200 py-3 pl-10 pr-12 focus:border-green-500 focus:outline-none"
+                    className="input py-3 pl-10 pr-12"
                     placeholder="Enter your password"
                     required
                   />
@@ -98,7 +98,7 @@ export default function InstituteMinistryLogin() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-lg bg-gradient-to-r from-green-500 to-red-500 py-3 font-semibold text-white transition hover:from-green-600 hover:to-red-600 disabled:opacity-50"
+                className="btn-primary w-full"
               >
                 {loading ? 'Signing in...' : 'Sign In'}
               </button>
@@ -106,7 +106,7 @@ export default function InstituteMinistryLogin() {
 
             <div className="mt-6 text-center text-sm text-gray-600">
               Need access?{' '}
-              <Link to="/contact" className="font-semibold text-green-500 hover:underline">
+              <Link to="/contact" className="font-semibold text-forest-700 hover:underline">
                 Contact Administrator
               </Link>
             </div>
