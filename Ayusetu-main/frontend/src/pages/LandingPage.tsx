@@ -549,30 +549,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="partners" className="scroll-mt-24 bg-white py-16">
-          <div className="mx-auto max-w-6xl px-4">
-            <div className="text-center">
-              <p className="text-xs font-bold uppercase tracking-wider text-saffron-700">{t.partners.kicker}</p>
-              <h2 className="mt-3 text-2xl font-bold text-ink-900 sm:text-3xl">{t.partners.title}</h2>
-            </div>
-            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-              {PARTNERS.map(p => (
-                <article
-                  key={p.ab}
-                  className="group relative overflow-hidden rounded-xl border-2 border-slate-200 bg-gradient-to-br from-white to-forest-50/30 px-4 py-6 text-center shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-forest-300 hover:shadow-xl"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-forest-500/0 to-forest-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  <div className="relative">
-                    <span className="text-base font-extrabold tracking-wide text-forest-800">{p.ab}</span>
-                    <span className="mt-2 block line-clamp-2 text-[11px] font-medium leading-snug text-ink-600">{p.name}</span>
-                    <span className="mt-1 block text-[10px] font-semibold text-saffron-600">{p.city}</span>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
         <section id="for-you" className="scroll-mt-24 border-y border-slate-200 bg-white py-16">
           <div className="mx-auto max-w-6xl px-4">
             <div className="mx-auto max-w-2xl text-center">
@@ -600,37 +576,147 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="how-it-works" className="scroll-mt-24 py-16">
-          <div className="mx-auto max-w-6xl px-4">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2 className="font-serif text-2xl font-semibold text-ink-900 sm:text-3xl">{t.how.title}</h2>
-              <p className="mt-2 text-sm text-ink-500">{t.how.subtitle}</p>
+        <section id="how-it-works" className="scroll-mt-24 bg-gradient-to-br from-forest-50/30 via-white to-saffron-50/20 py-20">
+          <div className="mx-auto max-w-7xl px-4">
+            {/* Header */}
+            <div className="mx-auto max-w-3xl text-center">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-forest-100 to-saffron-100 px-4 py-2 text-xs font-bold uppercase tracking-wider text-forest-800">
+                  <span className="flex h-2 w-2 rounded-full bg-forest-600"></span>
+                  Simple Process
+                </span>
+              </motion.div>
+              <motion.h2
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="mt-4 font-serif text-3xl font-bold text-ink-900 sm:text-4xl lg:text-5xl"
+              >
+                {t.how.title}
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.15 }}
+                className="mt-4 text-base text-ink-600 sm:text-lg"
+              >
+                {t.how.subtitle}
+              </motion.p>
             </div>
-            <ol className="mt-10 grid gap-4 sm:grid-cols-5">
-              {t.how.steps.map((s, i) => (
-                <motion.li
-                  key={s.t}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.06 }}
-                  onClick={() => setHowStep(i)}
-                  onMouseEnter={() => setHowStep(i)}
-                  className={`card cursor-pointer p-5 text-center transition sm:text-left ${
-                    howStep === i ? 'border-forest-300 ring-2 ring-forest-600/15' : 'hover:border-forest-200'
-                  }`}
+
+            {/* Steps Grid */}
+            <div className="relative mt-16">
+              {/* Connecting Line - Desktop only */}
+              <div className="absolute left-0 right-0 top-12 hidden h-1 bg-gradient-to-r from-forest-200 via-forest-300 to-forest-200 lg:block" style={{ zIndex: 0 }} />
+              
+              <ol className="relative grid gap-6 sm:grid-cols-2 lg:grid-cols-5" style={{ zIndex: 1 }}>
+                {t.how.steps.map((s, i) => (
+                  <motion.li
+                    key={s.t}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    onClick={() => setHowStep(i)}
+                    onMouseEnter={() => setHowStep(i)}
+                    className={`group relative cursor-pointer transition-all duration-300 ${
+                      howStep === i ? 'scale-105' : 'hover:scale-105'
+                    }`}
+                  >
+                    {/* Card */}
+                    <div
+                      className={`relative h-full overflow-hidden rounded-2xl border-2 bg-white p-6 shadow-lg transition-all duration-300 ${
+                        howStep === i
+                          ? 'border-forest-500 shadow-2xl shadow-forest-500/20'
+                          : 'border-slate-200 hover:border-forest-300 hover:shadow-xl'
+                      }`}
+                    >
+                      {/* Gradient Background */}
+                      <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-300 ${
+                        howStep === i 
+                          ? 'from-forest-50 to-saffron-50 opacity-100' 
+                          : 'from-forest-50/30 to-transparent opacity-0 group-hover:opacity-100'
+                      }`} />
+                      
+                      {/* Content */}
+                      <div className="relative">
+                        {/* Number Badge */}
+                        <div className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl font-serif text-2xl font-bold shadow-lg transition-all duration-300 ${
+                          howStep === i
+                            ? 'bg-gradient-to-br from-forest-600 to-forest-700 text-white scale-110'
+                            : 'bg-gradient-to-br from-forest-100 to-forest-200 text-forest-800 group-hover:scale-110'
+                        }`}>
+                          {i + 1}
+                        </div>
+                        
+                        {/* Step Label */}
+                        <div className={`mt-1 inline-block rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                          howStep === i
+                            ? 'bg-forest-600 text-white'
+                            : 'bg-forest-100 text-forest-700'
+                        }`}>
+                          Step {i + 1}
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="mt-4 text-lg font-bold text-ink-900 leading-snug">{s.t}</h3>
+                        
+                        {/* Description */}
+                        <p className="mt-2 text-sm leading-relaxed text-ink-600">{s.b}</p>
+
+                        {/* Arrow indicator for active step */}
+                        {howStep === i && (
+                          <motion.div
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="mt-3 flex items-center gap-2 text-xs font-semibold text-forest-700"
+                          >
+                            <ArrowRight size={14} />
+                            <span>Current step</span>
+                          </motion.div>
+                        )}
+                      </div>
+
+                      {/* Hover Glow Effect */}
+                      <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-to-br from-forest-400/20 to-saffron-400/20 blur-2xl transition-opacity duration-300 group-hover:opacity-100 opacity-0" />
+                    </div>
+
+                    {/* Arrow between cards - Desktop only */}
+                    {i < t.how.steps.length - 1 && (
+                      <div className="absolute -right-3 top-12 z-10 hidden h-6 w-6 items-center justify-center rounded-full bg-forest-500 text-white shadow-lg lg:flex">
+                        <ArrowRight size={14} />
+                      </div>
+                    )}
+                  </motion.li>
+                ))}
+              </ol>
+            </div>
+
+            {/* Bottom CTA */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+              className="mt-12 text-center"
+            >
+              <div className="inline-flex items-center gap-3 rounded-2xl border-2 border-forest-200 bg-white px-6 py-4 shadow-lg">
+                <span className="text-sm font-medium text-ink-600">Want to learn more?</span>
+                <Link 
+                  to="/about" 
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-forest-600 to-forest-700 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-forest-500/30 hover:scale-105"
                 >
-                  <span className="text-xs font-bold text-forest-600">0{i + 1}</span>
-                  <p className="mt-2 font-semibold text-ink-900">{s.t}</p>
-                  <p className="mt-1 text-sm text-ink-500">{s.b}</p>
-                </motion.li>
-              ))}
-            </ol>
-            <p className="mt-8 text-center">
-              <Link to="/about" className="text-sm font-semibold text-forest-700 hover:underline">
-                {t.footer.about} →
-              </Link>
-            </p>
+                  {t.footer.about}
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+            </motion.div>
           </div>
         </section>
 
@@ -731,6 +817,30 @@ export default function LandingPage() {
             </div>
             <div className="mt-10">
               <RoleTiles labels={roleLabels} startLabel={t.workspaces.start} onPick={startEntry} />
+            </div>
+          </div>
+        </section>
+
+        <section id="partners" className="scroll-mt-24 bg-white py-16 border-t border-slate-200">
+          <div className="mx-auto max-w-6xl px-4">
+            <div className="text-center">
+              <p className="text-xs font-bold uppercase tracking-wider text-saffron-700">{t.partners.kicker}</p>
+              <h2 className="mt-3 text-2xl font-bold text-ink-900 sm:text-3xl">{t.partners.title}</h2>
+            </div>
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+              {PARTNERS.map(p => (
+                <article
+                  key={p.ab}
+                  className="group relative overflow-hidden rounded-xl border-2 border-slate-200 bg-gradient-to-br from-white to-forest-50/30 px-4 py-6 text-center shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-forest-300 hover:shadow-xl"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-forest-500/0 to-forest-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="relative">
+                    <span className="text-base font-extrabold tracking-wide text-forest-800">{p.ab}</span>
+                    <span className="mt-2 block line-clamp-2 text-[11px] font-medium leading-snug text-ink-600">{p.name}</span>
+                    <span className="mt-1 block text-[10px] font-semibold text-saffron-600">{p.city}</span>
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
         </section>

@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { connectDatabase } from './config/database';
+import { runSeeds } from './seed';
 import authRoutes from './routes/auth';
 import assessmentRoutes from './routes/assessments';
 import opportunityRoutes from './routes/opportunities';
@@ -91,6 +92,9 @@ const startServer = async () => {
   try {
     // Connect to MongoDB
     await connectDatabase();
+    
+    // Seed test users for development
+    await runSeeds();
 
     app.listen(PORT, () => {
       console.log(`✓ Backend server running on port ${PORT}`);

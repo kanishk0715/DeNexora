@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { IndiaAppBar, MinistryLogo } from '../brand/IndiaMark';
@@ -13,7 +13,48 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('');
   const c = COPY[lang].nav;
+
+  // Scroll spy - detect which section is visible
+  useEffect(() => {
+    if (location.pathname !== '/') return;
+
+    const handleScroll = () => {
+      const sections = ['partners', 'for-you', 'how-it-works', 'features', 'pathways', 'workspaces'];
+      const scrollPosition = window.scrollY + 150; // offset for navbar
+
+      // Check if at top (home)
+      if (window.scrollY < 200) {
+        setActiveSection('');
+        return;
+      }
+
+      // Find which section is currently visible
+      for (const sectionId of sections) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActiveSection(sectionId);
+            return;
+          }
+        }
+      }
+    };
+
+    handleScroll(); // Check on mount
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [location.pathname]);
+
+  // Also update activeSection when hash changes
+  useEffect(() => {
+    const hash = location.hash.replace(/^#/, '');
+    if (hash) {
+      setActiveSection(hash);
+    }
+  }, [location.hash]);
 
   const start = () => {
     setOpen(false);
@@ -28,18 +69,21 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
 
   const links: { to?: string; hash?: string; label: string }[] = [
     { to: '/', label: c.home || 'Home' },
-    { hash: 'how-it-works', label: c.how },
     { hash: 'for-you', label: c.forYou },
+    { hash: 'how-it-works', label: c.how },
     { hash: 'features', label: c.features },
     { to: '/about', label: c.about },
-    { hash: 'workspaces', label: c.workspaces },
   ];
 
-  const section = location.hash.replace(/^#/, '');
   const isActive = (l: (typeof links)[number]) => {
-    if (l.to === '/') return location.pathname === '/' && !section;
-    if (l.to) return location.pathname === l.to;
-    return location.pathname === '/' && section === l.hash;
+    // For external routes (not on home page)
+    if (l.to && l.to !== '/') return location.pathname === l.to;
+    
+    // For home page root
+    if (l.to === '/') return location.pathname === '/' && !activeSection;
+    
+    // For section hashes - use activeSection from scroll spy
+    return location.pathname === '/' && activeSection === l.hash;
   };
 
   const NavItems = ({ onClick }: { onClick?: () => void }) => (
