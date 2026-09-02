@@ -581,6 +581,14 @@ export const AYURVEDA_BANK: BankQuestion[] = [
 ];
 
 export const ONBOARDING_KEY = 'ayusetu-onboarding';
+export const ASSESSMENT_RESULT_KEY = 'ayusetu-assessment-result';
+
+export type SavedAssessment = {
+  skills: string[];
+  answers: Record<string, number>;
+  done: boolean;
+  nlpFlags: string[];
+};
 
 export function questionsForSkills(skills: string[]): BankQuestion[] {
   const set = new Set(skills);
@@ -593,4 +601,23 @@ export function loadOnboarding(): { role?: string; answers?: Record<string, stri
   } catch {
     return {};
   }
+}
+
+export function loadAssessmentResult(skills: string[]): SavedAssessment | null {
+  try {
+    const raw = JSON.parse(sessionStorage.getItem(ASSESSMENT_RESULT_KEY) || 'null') as SavedAssessment | null;
+    if (!raw?.done) return null;
+    if (JSON.stringify(raw.skills) !== JSON.stringify(skills)) return null;
+    return raw;
+  } catch {
+    return null;
+  }
+}
+
+export function saveAssessmentResult(data: SavedAssessment) {
+  sessionStorage.setItem(ASSESSMENT_RESULT_KEY, JSON.stringify(data));
+}
+
+export function clearAssessmentResult() {
+  sessionStorage.removeItem(ASSESSMENT_RESULT_KEY);
 }

@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Clock, Keyboard } from 'lucide-react';
-import { PageHeader } from '../../components/ui/Primitives';
+import { PageHeader, WorkspaceBack } from '../../components/ui/Primitives';
 import { ReadinessRing } from '../../components/ui/ReadinessRing';
 import { useToast } from '../../contexts/ToastContext';
-import { loadOnboarding, questionsForSkills, type BankQuestion } from '../../data/ayurvedaBank';
+import { loadOnboarding, loadAssessmentResult, saveAssessmentResult, clearAssessmentResult, questionsForSkills, type BankQuestion } from '../../data/ayurvedaBank';
 import { fetchAssessmentFlags } from '../../lib/api';
 
 function formatTime(s: number) {
@@ -18,7 +18,7 @@ function paperFromOnboarding(): { skills: string[]; stream: string; questions: B
   const data = loadOnboarding();
   const answers = data.answers ?? {};
   const stream = typeof answers.stream === 'string' ? answers.stream : '';
-  const skills = Array.isArray(answers.skill) ? answers.skill : [];
+  const skills = Array.isArray(answers.skill) ? answers.skill.slice(0, 3) : [];
   return { skills, stream, questions: questionsForSkills(skills) };
 }
 
@@ -26,12 +26,13 @@ export default function AssessmentPage() {
   const { toast } = useToast();
   const paper = useMemo(() => paperFromOnboarding(), []);
   const questions = paper.questions;
+  const saved = useMemo(() => loadAssessmentResult(paper.skills), [paper.skills]);
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [done, setDone] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, number>>(() => saved?.answers ?? {});
+  const [done, setDone] = useState(() => Boolean(saved?.done));
   const [seconds, setSeconds] = useState(180);
   const [locked, setLocked] = useState(false);
-  const [nlpFlags, setNlpFlags] = useState<string[]>([]);
+  const [nlpFlags, setNlpFlags] = useState<string[]>(() => saved?.nlpFlags ?? []);
   const lockRef = useRef(false);
   const q = questions[step];
   const pct = questions.length ? ((step + (answers[q?.id] !== undefined ? 0.35 : 0)) / questions.length) * 100 : 0;
@@ -81,6 +82,11 @@ export default function AssessmentPage() {
   }, [done, answers, questions]);
 
   useEffect(() => {
+    if (!done) return;
+    saveAssessmentResult({ skills: paper.skills, answers, done: true, nlpFlags });
+  }, [done, answers, nlpFlags, paper.skills]);
+
+  useEffect(() => {
     if (done || !q) return;
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
@@ -101,14 +107,14 @@ export default function AssessmentPage() {
       <div className="mx-auto max-w-2xl">
         <PageHeader
           kicker="Skill assessment"
-          title="Choose BAMS subjects first"
-          subtitle="Start as a BAMS student and select one or more subjects. This paper is built only from those subjects — 10 questions each."
+          title="Choose subjects first"
+          subtitle="Start as a student in any AYUSH stream and select up to 3 subjects. The paper is built only from those subjects — 10 questions each."
         />
         <div className="card p-6">
           <p className="text-sm text-ink-500">
-            {paper.stream && paper.stream !== 'BAMS'
-              ? `${paper.stream} subject assessments are coming soon. Select BAMS in Get started to take Kayachikitsa, Panchakarma and other BAMS papers.`
-              : 'No subjects selected. Open Get started, choose Student → BAMS, then pick the specialties to assess.'}
+            {paper.stream
+              ? `No subjects selected for ${paper.stream}. Open Get started, pick your stream, then choose up to 3 specialties to assess.`
+              : 'No subjects selected. Open Get started, choose Student, then pick up to 3 specialties to assess.'}
           </p>
           <Link to="/" className="btn-primary mt-5">
             Get started
@@ -129,8 +135,9 @@ export default function AssessmentPage() {
   if (done) {
     return (
       <div className="mx-auto max-w-3xl">
+        <WorkspaceBack fallback="/dashboard" label="Back to overview" />
         <PageHeader
-          kicker="BAMS subject assessment"
+          kicker={paper.stream ? `${paper.stream} subject assessment` : 'Subject assessment'}
           title="Profile updated"
           subtitle={`Scored ${paper.skills.join(', ')}. Gaps now drive internship ranking.`}
         />
@@ -163,12 +170,28 @@ export default function AssessmentPage() {
             ))}
           </ul>
           <div className="mt-6 flex flex-wrap gap-2">
-            <Link to="/skills" className="btn-primary">
+            <Link to="/skills" state={{ from: '/assessment' }} className="btn-primary">
               Open skill map
             </Link>
-            <Link to="/opportunities" className="btn-secondary">
+            <Link to="/opportunities" state={{ from: '/assessment' }} className="btn-secondary">
               See ranked internships
             </Link>
+            <button
+              type="button"
+              className="text-sm font-semibold text-forest-800 hover:underline"
+              onClick={() => {
+                clearAssessmentResult();
+                setDone(false);
+                setAnswers({});
+                setStep(0);
+                setSeconds(180);
+                setNlpFlags([]);
+                lockRef.current = false;
+                setLocked(false);
+              }}
+            >
+              Retake assessment
+            </button>
           </div>
         </motion.div>
       </div>
@@ -179,7 +202,7 @@ export default function AssessmentPage() {
     <div className="mx-auto max-w-2xl">
       <PageHeader
         kicker={q.skill}
-        title="BAMS competency check"
+        title="Competency check"
         subtitle={`${paper.skills.join(' · ')} · ${questions.length} questions from the subjects you selected.`}
         actions={
           <div

@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, ClipboardList, Briefcase, FileCheck, FileScan } from 'lucide-react';
+import { ArrowRight, ClipboardList, Briefcase, FileCheck, FileScan, Landmark } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { PageHeader, StatCard, MatchBar, StatusBadge } from '../components/ui/Primitives';
 import { ReadinessRing } from '../components/ui/ReadinessRing';
+import { RoleBasedDashboard } from '../components/dashboard/RoleBasedDashboard';
 import { DEMO_APPLICATIONS, DEMO_OPPORTUNITIES, DEMO_SKILLS, SKILL_DEMAND, STATE_PLACEMENTS } from '../data/demo';
 import { StatePulseGrid } from '../components/ministry/StatePulseGrid';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -40,11 +41,12 @@ function StudentDash({ name }: { name: string }) {
           <StatCard label="Skill gaps" value="2" hint="Docs + Nadi Pariksha" />
         </div>
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {[
           { to: '/assessment', label: 'Continue assessment', hint: 'Write scores into your map', icon: ClipboardList },
           { to: '/resume', label: 'Resume analyzer', hint: 'Map CV skills to AYUSH internships', icon: FileScan },
           { to: '/opportunities', label: 'Ranked internships', hint: 'Gap-aware match order', icon: Briefcase },
+          { to: '/exams-schemes', label: 'Exams & schemes', hint: 'AIAPGET, NAM, scholarships', icon: Landmark },
           { to: '/portfolio', label: 'Public profile', hint: 'Unverified items stay hidden', icon: FileCheck },
         ].map(item => {
           const Icon = item.icon;
@@ -67,6 +69,9 @@ function StudentDash({ name }: { name: string }) {
           </Link>
           );
         })}
+      </div>
+      <div className="mt-6">
+        <RoleBasedDashboard />
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="card p-5">
@@ -146,6 +151,9 @@ function IndustryDash() {
         <StatCard label="Avg. match" value="81%" />
         <StatCard label="Time-to-shortlist" value="48h" />
       </div>
+      <div className="mt-6">
+        <RoleBasedDashboard />
+      </div>
       <div className="card mt-6 p-5">
         <h2 className="mb-4 font-semibold text-forest-900">Recruitment funnel</h2>
         <ResponsiveContainer width="100%" height={240}>
@@ -160,7 +168,7 @@ function IndustryDash() {
             <XAxis dataKey="stage" tick={{ fontSize: 12 }} />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="n" fill="#16553d" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="n" fill="#2c4536" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -181,6 +189,9 @@ function InstitutionDash() {
         <StatCard label="Verified credentials" value="312" hint="Pending: 28" />
         <StatCard label="Industry postings mapped" value="64" />
       </div>
+      <div className="mt-6">
+        <RoleBasedDashboard />
+      </div>
       <div className="card mt-6 p-5">
         <h2 className="mb-4 font-semibold text-forest-900">Demand vs graduate supply</h2>
         <ResponsiveContainer width="100%" height={280}>
@@ -189,8 +200,8 @@ function InstitutionDash() {
             <XAxis dataKey="skill" tick={{ fontSize: 11 }} interval={0} angle={-18} textAnchor="end" height={70} />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="demand" fill="#c45c26" name="Industry demand" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="supply" fill="#16553d" name="Graduate supply" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="demand" fill="#927024" name="Industry demand" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="supply" fill="#2c4536" name="Graduate supply" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -213,6 +224,9 @@ function MinistryDash() {
         <StatCard label="Offers confirmed" value="6,410" />
       </div>
       <div className="mt-6">
+        <RoleBasedDashboard />
+      </div>
+      <div className="mt-6">
         <StatePulseGrid />
       </div>
       <div className="card mt-6 p-5">
@@ -223,8 +237,8 @@ function MinistryDash() {
             <XAxis dataKey="state" tick={{ fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={70} />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="internships" fill="#16553d" name="Internships" />
-            <Bar dataKey="jobs" fill="#c45c26" name="Jobs" />
+            <Bar dataKey="internships" fill="#2c4536" name="Internships" />
+            <Bar dataKey="jobs" fill="#927024" name="Jobs" />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -244,6 +258,9 @@ function FacultyDash({ name }: { name: string }) {
         <StatCard label="Open FDP seats" value="14" />
         <StatCard label="Faculty internships" value="9" />
         <StatCard label="Active collaborations" value="5" />
+      </div>
+      <div className="mt-6">
+        <RoleBasedDashboard />
       </div>
     </div>
   );

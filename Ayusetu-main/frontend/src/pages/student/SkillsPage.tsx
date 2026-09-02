@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
-import { PageHeader, MatchBar } from '../../components/ui/Primitives';
+import { PageHeader, MatchBar, WorkspaceBack } from '../../components/ui/Primitives';
 import { DEMO_SKILLS } from '../../data/demo';
 
 export default function SkillsPage() {
   return (
     <div className="mx-auto max-w-5xl">
+      <WorkspaceBack to="/assessment" label="Back to scores" />
       <PageHeader
         kicker="AI skill mapping"
         title="Your AYUSH skill map"

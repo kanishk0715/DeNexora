@@ -97,7 +97,7 @@ const PARTNER_ROLES: User['role'][] = ['academician', 'industry', 'institution']
 
 type Gate = 'choose' | 'partner' | 'questions';
 
-type Question = { id: string; label: string; options: string[]; multi?: boolean };
+type Question = { id: string; label: string; options: string[]; multi?: boolean; max?: number };
 
 const QUESTIONS: Record<string, Question[]> = {
   student: [
@@ -106,8 +106,9 @@ const QUESTIONS: Record<string, Question[]> = {
     { id: 'goal', label: 'What are you looking for?', options: ['Internship', 'Job / placement', 'Both'] },
     {
       id: 'skill',
-      label: 'Which BAMS subjects should we assess?',
+      label: 'Which subjects should we assess?',
       multi: true,
+      max: 3,
       options: BAMS_SUBJECTS.map(s => s.id),
     },
   ],
@@ -147,10 +148,8 @@ const QUESTIONS: Record<string, Question[]> = {
   ],
 };
 
-function studentQuestions(answers: Record<string, string | string[]>): Question[] {
-  const base = QUESTIONS.student.filter(q => q.id !== 'skill');
-  if (answers.stream === 'BAMS') return QUESTIONS.student;
-  return base;
+function studentQuestions(): Question[] {
+  return QUESTIONS.student;
 }
 
 function answered(q: Question, answers: Record<string, string | string[]>) {
@@ -172,7 +171,7 @@ export default function LandingPage() {
   const [howStep, setHowStep] = useState(0);
   const t = COPY[lang];
 
-  const questions = role === 'student' ? studentQuestions(answers) : role ? QUESTIONS[role] ?? [] : [];
+  const questions = role === 'student' ? studentQuestions() : role ? QUESTIONS[role] ?? [] : [];
   const complete = questions.length > 0 && questions.every(q => answered(q, answers));
   const roleLabel = role ? t.roles[role].label : '';
   const partnerCopy = {
@@ -233,9 +232,7 @@ export default function LandingPage() {
 
   const modalHelp =
     gate === 'questions' && role === 'student'
-      ? answers.stream === 'BAMS'
-        ? 'Pick BAMS subjects. Assessment will only ask the papers you select.'
-        : 'Choose your stream first. BAMS unlocks subject papers for assessment.'
+      ? 'Pick up to 3 subjects. The same papers are offered for BAMS, BNYS, BUMS, BSMS and BHMS.'
       : gate === 'questions'
         ? t.modal.help
         : gate === 'partner'
@@ -246,7 +243,7 @@ export default function LandingPage() {
     if (!role || !complete) return;
     sessionStorage.setItem(ONBOARDING_KEY, JSON.stringify({ role, answers }));
     enterDemo(role);
-    if (role === 'student' && answers.stream === 'BAMS') navigate('/assessment');
+    if (role === 'student') navigate('/assessment');
     else navigate('/dashboard');
   };
 
@@ -269,7 +266,7 @@ export default function LandingPage() {
   }, [location.hash]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-forest-50/30 via-white to-saffron-50/30 text-ink-900">
+    <div className="flex min-h-screen flex-col bg-transparent text-ink-900">
       <Modal
         open={open}
         onClose={reset}
@@ -360,46 +357,60 @@ export default function LandingPage() {
                     q.id === 'skill'
                       ? BAMS_SUBJECTS.map(s => ({ id: s.id, label: s.label, hint: s.hint }))
                       : q.options.map(opt => ({ id: opt, label: opt, hint: '' }));
+                  const selectedCount = Array.isArray(value) ? value.length : 0;
+                  const atLimit = Boolean(q.max && selectedCount >= q.max);
                   return (
                     <fieldset key={q.id}>
                       <legend className="text-sm font-semibold text-ink-900">
                         {i + 1}. {q.label}
-                        {q.multi && <span className="ml-2 font-normal text-ink-500">Select all that apply</span>}
+                        {q.multi && (
+                          <span className="ml-2 font-normal text-ink-500">
+                            {q.max ? `Choose up to ${q.max}` : 'Select all that apply'}
+                            {q.max ? ` · ${selectedCount}/${q.max}` : ''}
+                          </span>
+                        )}
                       </legend>
                       <div className={`mt-2 flex flex-wrap gap-2 ${q.id === 'skill' ? 'flex-col sm:flex-row' : ''}`}>
-                        {opts.map(opt => (
+                        {opts.map(opt => {
+                          const on = picked(opt.id);
+                          const blocked = atLimit && !on;
+                          return (
                           <button
                             key={opt.id}
                             type="button"
+                            disabled={blocked}
+                            aria-disabled={blocked}
                             onClick={() =>
                               setAnswers(a => {
                                 if (q.id === 'stream') {
-                                  const next: Record<string, string | string[]> = { ...a, stream: opt.id };
-                                  if (opt.id !== 'BAMS') delete next.skill;
-                                  return next;
+                                  return { ...a, stream: opt.id };
                                 }
                                 if (!q.multi) return { ...a, [q.id]: opt.id };
                                 const cur = Array.isArray(a[q.id]) ? [...(a[q.id] as string[])] : [];
-                                const next = cur.includes(opt.id) ? cur.filter(x => x !== opt.id) : [...cur, opt.id];
-                                return { ...a, [q.id]: next };
+                                if (cur.includes(opt.id)) return { ...a, [q.id]: cur.filter(x => x !== opt.id) };
+                                if (q.max && cur.length >= q.max) return a;
+                                return { ...a, [q.id]: [...cur, opt.id] };
                               })
                             }
                             className={`rounded-xl border px-3 py-1.5 text-left text-sm transition ${
                               q.id === 'skill' ? 'sm:w-[calc(50%-0.25rem)]' : 'rounded-full'
                             } ${
-                              picked(opt.id)
+                              on
                                 ? 'border-forest-600 bg-forest-600 text-white'
-                                : 'border-slate-200 bg-white text-ink-700 hover:border-forest-300'
+                                : blocked
+                                  ? 'cursor-not-allowed border-slate-200 bg-slate-50 text-ink-400'
+                                  : 'border-slate-200 bg-white text-ink-700 hover:border-forest-300'
                             }`}
                           >
                             <span className="font-medium">{opt.label}</span>
                             {opt.hint ? (
-                              <span className={`mt-0.5 block text-[11px] ${picked(opt.id) ? 'text-white/80' : 'text-ink-500'}`}>
+                              <span className={`mt-0.5 block text-[11px] ${on ? 'text-white/80' : 'text-ink-500'}`}>
                                 {opt.hint}
                               </span>
                             ) : null}
                           </button>
-                        ))}
+                          );
+                        })}
                       </div>
                     </fieldset>
                   );
@@ -422,7 +433,7 @@ export default function LandingPage() {
                 {t.modal.back}
               </button>
               <button type="submit" className="btn-primary flex-1" disabled={!complete}>
-                {role === 'student' && answers.stream === 'BAMS' ? 'Start subject assessment' : t.modal.continue}
+                {role === 'student' ? 'Start subject assessment' : t.modal.continue}
               </button>
             </div>
           </form>

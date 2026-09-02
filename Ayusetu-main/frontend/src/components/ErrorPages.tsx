@@ -18,7 +18,7 @@ function StatusPage({
   extraContent?: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-cream-100 text-ink-900">
+    <div className="flex min-h-screen flex-col bg-cream-50 text-ink-900">
       <SiteNav />
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center px-4 py-16 text-center">
         <p className="text-xs font-semibold uppercase tracking-wide text-saffron-600">AyuSetu</p>
@@ -41,32 +41,32 @@ export function ForbiddenPage() {
   const roleInfo: Record<string, { icon: any; color: string; bg: string; permissions: string[] }> = {
     student: {
       icon: GraduationCap,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
+      color: 'text-forest-700',
+      bg: 'bg-forest-50',
       permissions: ['Skill Assessments', 'Portfolio Management', 'Apply to Opportunities', 'Track Applications'],
     },
     academician: {
       icon: Users,
-      color: 'text-purple-600',
-      bg: 'bg-purple-50',
+      color: 'text-saffron-700',
+      bg: 'bg-saffron-50',
       permissions: ['Faculty Development Programs', 'Research Collaborations', 'Industry Internships', 'View Opportunities'],
     },
     industry: {
       icon: Building2,
-      color: 'text-orange-600',
-      bg: 'bg-orange-50',
+      color: 'text-copper-700',
+      bg: 'bg-copper-50',
       permissions: ['Post Job Opportunities', 'Manage Applications', 'Training Programs', 'Recruitment Analytics'],
     },
     institution: {
       icon: School,
-      color: 'text-green-600',
-      bg: 'bg-green-50',
+      color: 'text-forest-800',
+      bg: 'bg-forest-100',
       permissions: ['Student Analytics', 'Placement Tracking', 'Performance Reports', 'Manage Students'],
     },
     admin: {
       icon: Shield,
-      color: 'text-red-600',
-      bg: 'bg-red-50',
+      color: 'text-saffron-800',
+      bg: 'bg-saffron-100',
       permissions: ['User Management', 'Platform Analytics', 'Verifications', 'System Configuration'],
     },
   };
@@ -83,7 +83,7 @@ export function ForbiddenPage() {
       action={{ to: '/dashboard', label: 'Back to your dashboard' }}
       extraContent={
         user && info ? (
-          <div className={`mt-6 w-full max-w-md rounded-lg border-2 border-[#0b5c3a] ${info.bg} p-4`}>
+          <div className={`mt-6 w-full max-w-md rounded-2xl border border-forest-200 ${info.bg} p-5 text-left shadow-sm`}>
             <div className="mb-3 flex items-center gap-2">
               <div className="rounded-lg bg-white p-2">
                 <RoleIcon className={`h-5 w-5 ${info.color}`} />
@@ -97,7 +97,7 @@ export function ForbiddenPage() {
               <ul className="space-y-1">
                 {info.permissions.map((perm, idx) => (
                   <li key={idx} className="flex items-center gap-2">
-                    <span className="text-[#0b5c3a]">✓</span>
+                    <span className="text-forest-700">✓</span>
                     {perm}
                   </li>
                 ))}

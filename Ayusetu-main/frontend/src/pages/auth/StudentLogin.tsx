@@ -29,13 +29,13 @@ export default function StudentLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+    <div className="min-h-screen bg-transparent">
       <SiteNav />
       <div className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <div className="rounded-2xl border-2 border-blue-500 bg-white p-8 shadow-xl">
+          <div className="card p-8">
             <div className="mb-6 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-500">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-forest-700">
                 <GraduationCap className="h-8 w-8 text-white" />
               </div>
               <h1 className="text-2xl font-bold text-gray-900">Student Portal</h1>
@@ -89,7 +89,7 @@ export default function StudentLogin() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-lg bg-blue-500 py-3 font-semibold text-white transition hover:bg-blue-600 disabled:opacity-50"
+                className="btn-primary w-full"
               >
                 {loading ? 'Signing in...' : 'Sign In'}
               </button>
@@ -97,7 +97,7 @@ export default function StudentLogin() {
 
             <div className="mt-6 text-center text-sm text-gray-600">
               Don't have an account?{' '}
-              <Link to="/register" className="font-semibold text-blue-500 hover:underline">
+              <Link to="/register" className="font-semibold text-forest-700 hover:underline">
                 Register
               </Link>
             </div>

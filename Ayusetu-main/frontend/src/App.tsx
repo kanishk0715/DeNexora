@@ -10,6 +10,7 @@ import OpportunitiesPage from './pages/student/OpportunitiesPage';
 import ApplicationsPage from './pages/student/ApplicationsPage';
 import ResumeAnalyzerPage from './pages/student/ResumeAnalyzerPage';
 import PortfolioPage from './pages/student/PortfolioPage';
+import ExamsSchemesPage from './pages/student/ExamsSchemesPage';
 import IndustryOpportunitiesPage from './pages/industry/IndustryOpportunitiesPage';
 import IndustryApplicantsPage from './pages/industry/IndustryApplicantsPage';
 import IndustryProgramsPage from './pages/industry/IndustryProgramsPage';
@@ -108,6 +109,14 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={['student']}>
                   <PortfolioPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/exams-schemes"
+              element={
+                <ProtectedRoute allowedRoles={['student']}>
+                  <ExamsSchemesPage />
                 </ProtectedRoute>
               }
             />

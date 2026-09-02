@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { motion } from 'framer-motion';
 import { ShieldCheck, BadgeCheck, Lock } from 'lucide-react';
 import { SiteNav } from './SiteNav';
 import { SiteFooter } from './SiteFooter';
@@ -15,7 +16,7 @@ export function AuthFrame({
   body?: string;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-cream-100">
+    <div className="flex min-h-screen flex-col bg-cream-50">
       <SiteNav />
       <main className="flex flex-1">
         <aside className="relative hidden min-h-[28rem] w-[44%] overflow-hidden lg:block">
@@ -38,7 +39,16 @@ export function AuthFrame({
             </ul>
           </div>
         </aside>
-        <div className="flex flex-1 items-center justify-center px-4 py-12">{children}</div>
+        <div className="flex flex-1 items-center justify-center px-4 py-12">
+          <motion.div
+            className="w-full max-w-md"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28 }}
+          >
+            {children}
+          </motion.div>
+        </div>
       </main>
       <SiteFooter />
     </div>
