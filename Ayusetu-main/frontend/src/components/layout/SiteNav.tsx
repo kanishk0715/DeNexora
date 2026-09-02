@@ -69,6 +69,7 @@ export function SiteNav({ onGetStarted }: { onGetStarted?: () => void }) {
 
   const links: { to?: string; hash?: string; label: string }[] = [
     { to: '/', label: c.home || 'Home' },
+    { to: '/communities', label: 'Communities' },
     { hash: 'for-you', label: c.forYou },
     { hash: 'how-it-works', label: c.how },
     { hash: 'features', label: c.features },
