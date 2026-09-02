@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppShell from './components/layout/AppShell';
@@ -33,16 +35,34 @@ import { ToastProvider } from './contexts/ToastContext';
 import { CommandPalette } from './components/CommandPalette';
 import { ForbiddenPage, NotFoundPage } from './components/ErrorPages';
 import { AyurvedaChatbot } from './components/AyurvedaChatbot';
+import SacredLoadingAnimation from './components/SacredLoadingAnimation';
 
 export default function App() {
+  const [showLoading, setShowLoading] = useState(true);
+
+  const handleLoadingComplete = () => {
+    setShowLoading(false);
+  };
+
   return (
     <AuthProvider>
       <LocaleProvider>
       <ToastProvider>
       <BrowserRouter>
-        <CommandPalette />
-        <AyurvedaChatbot />
-        <Routes>
+        <AnimatePresence mode="wait">
+          {showLoading && (
+            <SacredLoadingAnimation 
+              duration={1800} 
+              onComplete={handleLoadingComplete}
+            />
+          )}
+        </AnimatePresence>
+
+        {!showLoading && (
+          <>
+            <CommandPalette />
+            <AyurvedaChatbot />
+            <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/communities" element={<CommunitiesPage />} />
@@ -232,6 +252,8 @@ export default function App() {
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+          </>
+        )}
       </BrowserRouter>
       </ToastProvider>
       </LocaleProvider>

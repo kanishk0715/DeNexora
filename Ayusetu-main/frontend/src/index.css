@@ -37,6 +37,11 @@ body {
   min-height: 100vh;
 }
 
+/* Sacred Loading Animation Background */
+.bg-gradient-radial {
+  background: radial-gradient(circle at center, #1b4332 0%, #0d2818 45%, #05140d 100%);
+}
+
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-forest-600 to-forest-700 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-forest-600/30 transition-all duration-300 hover:shadow-xl hover:shadow-forest-600/40 hover:-translate-y-0.5 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
